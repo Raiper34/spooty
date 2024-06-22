@@ -3,13 +3,15 @@ import {TrackService} from "./track.service";
 import {TrackModel} from "./track.model";
 import {TrackEntity} from "./track.entity";
 import {createReadStream} from "fs";
-import { join } from 'path';
+import { resolve } from 'path';
 import type { Response } from 'express';
+import {ConfigService} from "@nestjs/config";
 
 @Controller('track')
 export class TrackController {
 
-    constructor(private readonly service: TrackService) {
+    constructor(private readonly service: TrackService,
+                private readonly configService: ConfigService) {
     }
 
     @Get()
@@ -40,7 +42,7 @@ export class TrackController {
     @Get('download/:id')
     async getFile(@Res({ passthrough: true }) res: Response, @Param('id') id: number): Promise<StreamableFile> {
         const track = await this.service.findOne(id);
-        const file = createReadStream(join(process.cwd(), 'downloads', `${track.artist} - ${track.song}.mp3`));
+        const file = createReadStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song}.mp3`));
         res.set({'Content-Disposition': `attachment; filename="${track.artist} - ${track.song}.mp3"`,});
         return new StreamableFile(file);
     }

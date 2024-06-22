@@ -5,6 +5,8 @@
     "start:be": "npm run start:dev -w spooty-be",
     "start:fe": "npm run start -w spooty-fe",
     "build:be": "npm run build -w spooty-be",
+    "build:fe": "npm run build -w spooty-fe",
+    "build": "npm run build:be npm run build:fe",
     "start": "npm run start:prod -w spooty-be"
   }
 }

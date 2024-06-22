@@ -8,12 +8,15 @@ import {TrackStatusEnum} from "./track.model";
 import * as yts from 'yt-search';
 import * as ytdl from 'ytdl-core';
 import * as fs from 'fs';
+import {ConfigService} from "@nestjs/config";
+import {resolve} from "path";
 
 @Injectable()
 export class TrackService {
     constructor(
         @InjectRepository(TrackEntity)
         private repository: Repository<TrackEntity>,
+        private readonly configService: ConfigService,
     ) {}
 
     findAll(criteria?: Partial<TrackEntity>): Promise<TrackEntity[]> {
@@ -50,7 +53,12 @@ export class TrackService {
         const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued});
         queuedTracks.forEach(async track => {
             await ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"}).pipe(
-                fs.createWriteStream(`downloads/${track.artist} - ${track.song.replace('/', '')}.mp3`)
+                fs.createWriteStream(resolve(
+                    __dirname,
+                    '..',
+                    this.configService.get<string>('DOWNLOADS'),
+                    `${track.artist} - ${track.song.replace('/', '')}.mp3`,
+                ))
             );
             await this.update(track.id, {...track, status: TrackStatusEnum.Completed})
         });
