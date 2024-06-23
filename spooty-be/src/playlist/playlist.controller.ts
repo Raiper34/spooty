@@ -20,10 +20,9 @@ export class PlaylistController {
     }
 
     @Post()
-    create(@Body() playlist: PlaylistModel): any {
-        getDetails(playlist.spotifyUrl).then(async details => {
+    async create(@Body() playlist: PlaylistModel): Promise<void> {
+        await getDetails(playlist.spotifyUrl).then(async details => {
             const savedPlaylist = await this.service.create({...playlist, name: details.preview.title});
-            console.log(savedPlaylist);
             details.tracks.forEach(track => {
                 this.trackService.create({
                     artist: track.artist,
@@ -32,6 +31,5 @@ export class PlaylistController {
                 }, savedPlaylist);
             });
         });
-        //return {url: url.url};
     }
 }

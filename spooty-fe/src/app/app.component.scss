@@ -1,7 +1,22 @@
 .panel-heading {
   padding: 5px 10px;
+  border-radius: 10px;
 }
 
 .panel-block {
   padding: 5px 10px;
+}
+
+.panel {
+  margin: 5px 0;
+}
+
+.loading-animation {
+  animation: spin 0.3s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform:rotate(360deg);
+  }
 }

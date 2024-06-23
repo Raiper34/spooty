@@ -6,7 +6,8 @@
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "gen": "ng generate"
   },
   "private": true,
   "dependencies": {
@@ -19,6 +20,14 @@
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
     "@fortawesome/fontawesome-free": "^6.5.2",
+    "@ngneat/elf": "^2.5.1",
+    "@ngneat/elf-cli-ng": "^1.0.0",
+    "@ngneat/elf-devtools": "^1.3.0",
+    "@ngneat/elf-entities": "^5.0.2",
+    "@ngneat/elf-pagination": "^1.1.0",
+    "@ngneat/elf-persist-state": "^1.2.1",
+    "@ngneat/elf-requests": "^1.9.2",
+    "@ngneat/elf-state-history": "^1.4.0",
     "bulma": "^1.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

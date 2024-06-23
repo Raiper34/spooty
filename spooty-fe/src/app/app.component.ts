@@ -1,34 +1,36 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {HttpClient} from "@angular/common/http";
 import {FormsModule} from "@angular/forms";
-import {NgFor, NgSwitch, NgSwitchCase} from "@angular/common";
+import {CommonModule, NgFor, NgSwitch, NgSwitchCase} from "@angular/common";
+import {PlaylistService} from "./services/playlist.service";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FormsModule, NgFor, NgSwitch, NgSwitchCase],
+  imports: [CommonModule, RouterOutlet, FormsModule, NgFor, NgSwitch, NgSwitchCase],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
 
   url = ''
-  playlists: any[] = [];
-  tracks = [
-    {code: 'CC', name: 'Aaaa'},
-    {code: 'CrC', name: 'Aaaadfdfd'},
-  ]
+  playlists$ = this.playlistService.all$;
+  loading$ = this.playlistService.loading$;
+  createLoading$ = this.playlistService.createLoading$;
 
-  constructor(private readonly http: HttpClient) {
-    this.get();
+  constructor(private readonly playlistService: PlaylistService) {
+    this.fetchPlaylists();
+  }
+
+  fetchPlaylists(): void {
+    this.playlistService.fetch();
   }
 
   download(): void {
-    this.http.post('/api/playlist', {spotifyUrl: this.url}).subscribe(() => this.get());
+    this.playlistService.create(this.url);
   }
 
-  get(): void {
-    this.http.get('/api/playlist').subscribe(data => this.playlists = data as any);
+  toggleCollapse(playlistId: number): void {
+    this.playlistService.toggleCollapsed(playlistId);
   }
 }
