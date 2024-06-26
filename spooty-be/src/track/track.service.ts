@@ -39,28 +39,34 @@ export class TrackService {
         await this.repository.update(id, track);
     }
 
-    @Interval(3000)
+    @Interval(10000)
     async findOnYoutube() {
         const newTracks = await this.findAll({status: TrackStatusEnum.New});
-        newTracks.forEach(async track => {
+        for(let track of newTracks) {
             const youtubeResult = await yts(`${track.artist} - ${track.song}`);
-            await this.update(track.id, {...track, youtubeUrl: youtubeResult.videos[0].url, status: TrackStatusEnum.Queued})
-        });
+            await this.update(track.id, {
+                ...track,
+                youtubeUrl: youtubeResult.videos[0].url,
+                status: TrackStatusEnum.Queued
+            });
+        }
     }
 
-    @Interval(3000)
+    @Interval(15000)
     async download() {
         const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued});
-        queuedTracks.forEach(async track => {
-            await ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"}).pipe(
-                fs.createWriteStream(resolve(
-                    __dirname,
-                    '..',
-                    this.configService.get<string>('DOWNLOADS'),
-                    `${track.artist} - ${track.song.replace('/', '')}.mp3`,
-                ))
-            );
+        for(let track of queuedTracks) {
+            await this.youtubeDownload(track);
             await this.update(track.id, {...track, status: TrackStatusEnum.Completed})
-        });
+        }
+    }
+
+    private youtubeDownload(track: TrackEntity): Promise<void> {
+        return new Promise((res, _reject) =>
+            ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"}).pipe(
+                fs.createWriteStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song.replace('/', '')}.mp3`))
+                    .on('finish', () => res())
+            )
+        );
     }
 }

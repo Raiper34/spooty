@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {PlaylistEntity} from "./playlist.entity";
+import {TrackService} from "../track/track.service";
+const fetch = require('isomorphic-unfetch');
+const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
 @Injectable()
 export class PlaylistService {
     constructor(
         @InjectRepository(PlaylistEntity)
         private repository: Repository<PlaylistEntity>,
+        private readonly trackService: TrackService,
     ) {}
 
     findAll(): Promise<PlaylistEntity[]> {
@@ -22,8 +26,17 @@ export class PlaylistService {
         await this.repository.delete(id);
     }
 
-    async create(track: PlaylistEntity): Promise<PlaylistEntity> {
-        return this.repository.save(track);
+    async create(playlist: PlaylistEntity): Promise<PlaylistEntity> {
+        const details = await getDetails(playlist.spotifyUrl);
+        const savedPlaylist = await this.repository.save({...playlist, name: details.preview.title});
+        for(let track of details.tracks) {
+            await this.trackService.create({
+                artist: track.artist,
+                song: track.name,
+                spotifyUrl: track.previewUrl,
+            }, savedPlaylist);
+        }
+        return savedPlaylist;
     }
 
     async update(id: number, track: PlaylistEntity): Promise<void> {
