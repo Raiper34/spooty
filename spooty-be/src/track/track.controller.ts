@@ -1,7 +1,6 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Res, StreamableFile} from '@nestjs/common';
+import {Controller, Get, Param, Res, StreamableFile} from '@nestjs/common';
 import {TrackService} from "./track.service";
 import {TrackModel} from "./track.model";
-import {TrackEntity} from "./track.entity";
 import {createReadStream} from "fs";
 import { resolve } from 'path';
 import type { Response } from 'express';
@@ -19,24 +18,9 @@ export class TrackController {
         return this.service.findAll();
     }
 
-    @Get(':id')
-    get(@Param('id') id: number): Promise<TrackModel> {
-        return this.service.findOne(id);
-    }
-
-    @Post()
-    create(@Body() track: TrackModel): Promise<TrackModel> {
-        return this.service.create(track as TrackEntity);
-    }
-
-    @Put(':id')
-    update(@Param('id') id: number, @Body() track: TrackModel): Promise<void> {
-        return this.service.update(id, track as TrackEntity);
-    }
-
-    @Delete(':id')
-    delete(@Param('id') id: number): Promise<void> {
-        return this.service.remove(id);
+    @Get('playlist/:id')
+    getAllByPlaylist(@Param('id') playlistId: number): Promise<TrackModel[]> {
+        return this.service.getAllByPlaylist(playlistId);
     }
 
     @Get('download/:id')

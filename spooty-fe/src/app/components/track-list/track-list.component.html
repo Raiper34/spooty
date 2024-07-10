@@ -1,0 +1,24 @@
+<a class="panel-block is-flex is-justify-content-space-between" *ngFor="let track of tracks$ | async">
+  <div>
+    <span>{{ track.artist }} - {{ track.song }}</span>&nbsp;
+    <a [href]="track.spotifyUrl" target="_blank" class="is-color-primary margin-left">
+      <i class="fa-brands fa-spotify"></i>
+    </a>&nbsp;
+    <a [href]="track.youtubeUrl" target="_blank" class="is-color-danger is-color-black">
+      <i class="fa-brands fa-youtube"></i>
+    </a>&nbsp;
+    <a *ngIf="track.status === trackStatuses.Completed" href="api/track/download/{{track.id}}" class="is-color-info" download>
+      <i class="fa-solid fa-download"></i>
+    </a>
+  </div>
+  <div>
+    <ng-container [ngSwitch]="track.status">
+      <span *ngSwitchCase="trackStatuses.New" class="tag is-info">New</span>
+      <span *ngSwitchCase="trackStatuses.Searching" class="tag is-warning">Searching</span>
+      <span *ngSwitchCase="trackStatuses.Queued" class="tag is-warning">Queued</span>
+      <span *ngSwitchCase="trackStatuses.Downloading" class="tag is-warning">Downloading</span>
+      <span *ngSwitchCase="trackStatuses.Completed" class="tag is-success">Completed</span>
+      <span *ngSwitchCase="trackStatuses.Error" class="tag is-danger" [title]="track.error">Error</span>
+    </ng-container>
+  </div>
+</a>

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn} from 'typeorm';
 import {PlaylistEntity} from "../playlist/playlist.entity";
 import {TrackStatusEnum} from "./track.model";
 
@@ -22,6 +22,12 @@ export class TrackEntity {
 
     @Column({default: TrackStatusEnum.New})
     status?: TrackStatusEnum;
+
+    @Column({ nullable: true })
+    error?: string;
+
+    @Column({default: Date.now()})
+    createdAt?: number;
 
     @ManyToOne(() => PlaylistEntity, playlist => playlist.tracks)
     playlist?: PlaylistEntity;

@@ -13,6 +13,9 @@ export class PlaylistEntity {
     @Column()
     spotifyUrl: string;
 
+    @Column({default: () => Date.now()})
+    createdAt?: number;
+
     @OneToMany(() => TrackEntity, track => track.playlist)
     tracks?: TrackEntity[];
 }

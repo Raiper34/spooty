@@ -2,16 +2,17 @@ import { Injectable } from '@angular/core';
 import {createStore} from "@ngneat/elf";
 import {HttpClient} from "@angular/common/http";
 import {
-  addEntities,
   selectAllEntities, selectEntities,
   setEntities,
   UIEntitiesRef,
-  unionEntities, updateEntities,
+  unionEntities, updateEntities, upsertEntities,
   withEntities,
   withUIEntities
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
-import {tap} from "rxjs";
+import {map, tap} from "rxjs";
+import {TrackService} from "./track.service";
+import {PlaylistEntity} from "spooty-be/dist/playlist/playlist.entity";
 
 const STORE_NAME = 'playlist';
 const ENDPOINT = '/api/playlist';
@@ -21,7 +22,7 @@ export interface Playlist {
   id: number;
   name: string;
   spotifyUrl: string;
-  tracks?: any[]; //todo fix it
+  createdAt: number;
 }
 
 export interface PlaylistUi {
@@ -42,12 +43,14 @@ export class PlaylistService {
   all$ = this.store.combine({
     entities: this.store.pipe(selectAllEntities()),
     UIEntities: this.store.pipe(selectEntities({ ref: UIEntitiesRef })),
-  }).pipe(unionEntities());
+  }).pipe(unionEntities(), map(data => data.sort((a, b) => b.createdAt - a.createdAt)));
 
   loading$ = this.store.pipe(joinRequestResult([STORE_NAME]));
   createLoading$ = this.store.pipe(joinRequestResult([CREATE_LOADING], { initialStatus: 'idle' }));
 
-  constructor(private readonly http: HttpClient) {
+  constructor(private readonly http: HttpClient,
+              private readonly trackService: TrackService,
+  ) {
   }
 
   fetch(): void {
@@ -56,6 +59,7 @@ export class PlaylistService {
         setEntities(data),
         setEntities(data.map(item => ({id: item.id, collapsed: false})), {ref: UIEntitiesRef})
       )),
+      tap((data: Playlist[]) => data.forEach(playlist => this.trackService.fetch(playlist.id))),
       trackRequestResult([STORE_NAME], { skipCache: true }),
     ).subscribe();
   }
@@ -63,7 +67,13 @@ export class PlaylistService {
   create(spotifyUrl: string): void {
     this.http.post(ENDPOINT, {spotifyUrl}).pipe(
       trackRequestResult([CREATE_LOADING], { skipCache: true })
-    ).subscribe();
+    ).subscribe((playlist: Partial<Playlist>) => {
+      this.store.update(upsertEntities(playlist));
+      this.store.update(
+        upsertEntities(playlist),
+        upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
+      )
+    });
   }
 
   toggleCollapsed(id: number): void {

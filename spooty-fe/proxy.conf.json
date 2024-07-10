@@ -6,5 +6,10 @@
     "pathRewrite": {
       "^/api": ""
     }
+  },
+  "/socket.io/*": {
+    "target": "http://localhost:3000/socket.io/",
+    "ws": true,
+    "logLevel": "debug"
   }
 }

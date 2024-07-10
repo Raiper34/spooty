@@ -8,6 +8,7 @@ const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info
 
 @Injectable()
 export class PlaylistService {
+
     constructor(
         @InjectRepository(PlaylistEntity)
         private repository: Repository<PlaylistEntity>,

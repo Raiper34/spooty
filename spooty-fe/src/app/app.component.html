@@ -22,8 +22,7 @@
     <hr>
     <div class="box">
     <div class="is-flex is-align-items-center">
-      <p class="subtitle">List</p>&nbsp;
-      <i class="fa-solid fa-arrows-rotate is-clickable" [class.loading-animation]="(loading$ | async)?.isLoading" (click)="fetchPlaylists()"></i>
+      <p class="subtitle">Playlists</p>&nbsp;
     </div>
 
     <article class="panel is-primary" *ngFor="let playlist of playlists$ | async">
@@ -38,27 +37,7 @@
         <a [href]="playlist.spotifyUrl" target="_blank" class="is-color-black"><i class="fa-brands fa-spotify"></i></a>
       </p>
       <ng-container *ngIf="playlist.collapsed">
-      <a class="panel-block is-flex is-justify-content-space-between" *ngFor="let track of playlist.tracks">
-        <div>
-          <a href="api/track/download/{{track.id}}" class="panel-icon is-color-info" download>
-            <i class="fa-solid fa-download"></i>
-          </a>
-          <span>{{track.artist}} - {{track.song}}</span>&nbsp;
-          <a [href]="track.spotifyUrl" target="_blank" class="is-color-primary margin-left">
-            <i class="fa-brands fa-spotify"></i>
-          </a>&nbsp;
-          <a [href]="track.youtubeUrl" target="_blank" class="is-color-danger is-color-black">
-            <i class="fa-brands fa-youtube"></i>
-          </a>
-        </div>
-        <div>
-          <ng-container [ngSwitch]="track.status">
-            <span *ngSwitchCase="0" class="tag is-info">New</span>
-            <span *ngSwitchCase="1" class="tag is-warning">Queued</span>
-            <span *ngSwitchCase="2" class="tag is-success">Completed</span>
-          </ng-container>
-        </div>
-      </a>
+        <app-track-list [playlistId]="playlist.id"></app-track-list>
       </ng-container>
     </article>
     </div>

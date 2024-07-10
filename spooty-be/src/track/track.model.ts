@@ -8,10 +8,15 @@ export interface TrackModel {
     youtubeUrl?: string;
     status?: TrackStatusEnum,
     playlist?: PlaylistModel;
+    createdAt?: number;
+    error?: string;
 }
 
 export enum TrackStatusEnum {
     New,
+    Searching,
     Queued,
+    Downloading,
     Completed,
+    Error,
 }

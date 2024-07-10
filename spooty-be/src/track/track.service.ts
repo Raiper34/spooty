@@ -10,9 +10,16 @@ import * as ytdl from 'ytdl-core';
 import * as fs from 'fs';
 import {ConfigService} from "@nestjs/config";
 import {resolve} from "path";
+import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
+import {Server} from "socket.io";
+import {SearchResult} from "yt-search";
 
+@WebSocketGateway()
 @Injectable()
 export class TrackService {
+
+    @WebSocketServer() io: Server;
+
     constructor(
         @InjectRepository(TrackEntity)
         private repository: Repository<TrackEntity>,
@@ -23,6 +30,10 @@ export class TrackService {
         return this.repository.find({where: criteria});
     }
 
+    getAllByPlaylist(id: number): Promise<TrackEntity[]> {
+        return this.repository.find({where: {playlist: {id}}});
+    }
+
     findOne(id: number): Promise<TrackEntity | null> {
         return this.repository.findOneBy({ id });
     }
@@ -31,41 +42,65 @@ export class TrackService {
         await this.repository.delete(id);
     }
 
-    async create(track: TrackEntity, playlist?: PlaylistEntity): Promise<TrackEntity> {
-        return this.repository.save({...track, playlist});
+    async create(track: TrackEntity, playlist?: PlaylistEntity): Promise<void> {
+        const savedTrack = await this.repository.save({...track, playlist});
+        this.io.emit('trackNew', {track: savedTrack, playlistId: playlist.id});
     }
 
     async update(id: number, track: TrackEntity): Promise<void> {
         await this.repository.update(id, track);
+        this.io.emit('track', track);
     }
 
-    @Interval(10000)
+    @Interval(1000)
     async findOnYoutube() {
         const newTracks = await this.findAll({status: TrackStatusEnum.New});
+        for (let track of newTracks) {
+            await this.update(track.id, {...track, status: TrackStatusEnum.Searching});
+        }
         for(let track of newTracks) {
-            const youtubeResult = await yts(`${track.artist} - ${track.song}`);
-            await this.update(track.id, {
-                ...track,
-                youtubeUrl: youtubeResult.videos[0].url,
-                status: TrackStatusEnum.Queued
-            });
+            let youtubeResult: SearchResult;
+            let updatedTrack: TrackEntity;
+            try {
+                youtubeResult = await yts(`${track.artist} - ${track.song}`);
+                updatedTrack = {...track, youtubeUrl: youtubeResult.videos[0].url, status: TrackStatusEnum.Queued};
+            } catch (err) {
+                updatedTrack = {...track, error: String(err), status: TrackStatusEnum.Error};
+            }
+            await this.update(track.id, updatedTrack);
         }
     }
 
-    @Interval(15000)
+    @Interval(1000)
     async download() {
         const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued});
+        for (let track of queuedTracks) {
+            await this.update(track.id, {...track, status: TrackStatusEnum.Downloading});
+        }
         for(let track of queuedTracks) {
-            await this.youtubeDownload(track);
-            await this.update(track.id, {...track, status: TrackStatusEnum.Completed})
+            let error: string;
+            try  {
+                await this.youtubeDownload(track);
+            } catch(err) {
+                console.log(err);
+                error = String(err);
+            }
+            const updatedTrack = {
+                ...track,
+                status: error ? TrackStatusEnum.Error : TrackStatusEnum.Completed,
+                ...(error ? {error} : {}),
+            };
+            await this.update(track.id, updatedTrack);
         }
     }
 
     private youtubeDownload(track: TrackEntity): Promise<void> {
-        return new Promise((res, _reject) =>
-            ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"}).pipe(
-                fs.createWriteStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song.replace('/', '')}.mp3`))
-                    .on('finish', () => res())
+        return new Promise((res, reject) =>
+            ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"})
+                .on('error', (err) => reject(err)).pipe(
+                    fs.createWriteStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song.replace('/', '')}.mp3`))
+                        .on('finish', () => res())
+                        .on('error', (err) => reject(err))
             )
         );
     }

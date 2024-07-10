@@ -3,4 +3,5 @@ export interface PlaylistModel {
     name: string;
     spotifyUrl: string;
     tracks?: any[]; //todo fix it
+    createdAt?: number;
 }
