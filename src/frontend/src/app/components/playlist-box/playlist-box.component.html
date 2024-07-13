@@ -1,4 +1,4 @@
-<article class="panel" [ngClass]="playlist.error ? 'is-danger' : 'is-primary'">
+<article class="panel" [ngClass]="statusClass$ | async">
   <p class="panel-heading is-flex is-justify-content-space-between">
         <span>
           <i class="is-clickable fa-solid"

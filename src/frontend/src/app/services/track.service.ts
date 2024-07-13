@@ -39,12 +39,19 @@ export class TrackService {
     withEntities<Track>(),
   );
 
-  getAllByPlaylist(id: number): Observable<Track[]> {
-    return this.store.pipe(selectManyByPredicate(({playlistId}) => playlistId === id))
+  getAllByPlaylist(id: number, status?: TrackStatusEnum): Observable<Track[]> {
+    return this.store.pipe(
+      selectManyByPredicate(({playlistId}) => playlistId === id),
+      map(data => data.filter(item => status === undefined || item.status === status)),
+    );
   }
 
   getCompletedByPlaylist(id: number): Observable<Track[]> {
-    return this.getAllByPlaylist(id).pipe(map(data => data.filter(item => item.status === TrackStatusEnum.Completed)));
+    return this.getAllByPlaylist(id, TrackStatusEnum.Completed);
+  }
+
+  getErrorByPlaylist(id: number): Observable<Track[]> {
+    return this.getAllByPlaylist(id, TrackStatusEnum.Error);
   }
 
   constructor(

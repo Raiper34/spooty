@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import {createStore} from "@ngneat/elf";
 import {HttpClient} from "@angular/common/http";
 import {
+  getEntityByPredicate,
   selectAllEntities, selectEntities,
+  selectEntityByPredicate,
   setEntities,
   UIEntitiesRef,
   unionEntities, updateEntities, upsertEntities,
@@ -10,7 +12,7 @@ import {
   withUIEntities
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
-import {map, Observable, tap} from "rxjs";
+import {combineLatest, map, Observable, tap} from "rxjs";
 import {Track, TrackService} from "./track.service";
 import {Socket} from "ngx-socket-io";
 
@@ -29,6 +31,14 @@ export interface Playlist {
 export interface PlaylistUi {
   id: number,
   collapsed: boolean;
+}
+
+export enum PLaylistStatusEnum {
+  InProgress,
+  Completed,
+  Warning,
+  Error,
+  Subscribed,
 }
 
 @Injectable({
@@ -62,12 +72,38 @@ export class PlaylistService {
     );
   }
 
+  getById(playlistId: number): Observable<Playlist | undefined> {
+    return this.store.pipe(selectEntityByPredicate(({id}) => id === playlistId));
+  }
+
   getTrackCount(id: number): Observable<number> {
     return this.trackService.getAllByPlaylist(id).pipe(map(data => data.length));
   }
 
   getCompletedTrackCount(id: number): Observable<number> {
     return this.trackService.getCompletedByPlaylist(id).pipe(map(data => data.length));
+  }
+
+  getErrorTrackCount(id: number): Observable<number> {
+    return this.trackService.getErrorByPlaylist(id).pipe(map(data => data.length));
+  }
+
+  getStatus$(id: number): Observable<PLaylistStatusEnum> {
+    return combineLatest([
+      this.getById(id),
+      this.getTrackCount(id),
+      this.getCompletedTrackCount(id),
+      this.getErrorTrackCount(id),
+    ]).pipe(map(([playlist, trackCount, completedCount, errorCount]) => {
+      if (playlist?.error || errorCount === trackCount) {
+        return PLaylistStatusEnum.Error;
+      } else if (trackCount === completedCount) {
+        return PLaylistStatusEnum.Completed;
+      } else if (errorCount > 1) {
+        return PLaylistStatusEnum.Warning;
+      }
+      return PLaylistStatusEnum.InProgress;
+    }));
   }
 
   fetch(): void {
