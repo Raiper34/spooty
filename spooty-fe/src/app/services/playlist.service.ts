@@ -11,8 +11,8 @@ import {
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
 import {map, tap} from "rxjs";
-import {TrackService} from "./track.service";
-import {PlaylistEntity} from "spooty-be/dist/playlist/playlist.entity";
+import {Track, TrackService} from "./track.service";
+import {Socket} from "ngx-socket-io";
 
 const STORE_NAME = 'playlist';
 const ENDPOINT = '/api/playlist';
@@ -49,8 +49,16 @@ export class PlaylistService {
   createLoading$ = this.store.pipe(joinRequestResult([CREATE_LOADING], { initialStatus: 'idle' }));
 
   constructor(private readonly http: HttpClient,
+              private readonly socket: Socket,
               private readonly trackService: TrackService,
   ) {
+    this.socket.on('playlistUpdate', (playlist: Playlist) => this.store.update(upsertEntities(playlist)));
+    this.socket.on('playlistNew', (playlist: Playlist) =>
+      this.store.update(
+        upsertEntities(playlist),
+        upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
+      )
+    );
   }
 
   fetch(): void {
@@ -67,13 +75,7 @@ export class PlaylistService {
   create(spotifyUrl: string): void {
     this.http.post(ENDPOINT, {spotifyUrl}).pipe(
       trackRequestResult([CREATE_LOADING], { skipCache: true })
-    ).subscribe((playlist: Partial<Playlist>) => {
-      this.store.update(upsertEntities(playlist));
-      this.store.update(
-        upsertEntities(playlist),
-        upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
-      )
-    });
+    ).subscribe();
   }
 
   toggleCollapsed(id: number): void {

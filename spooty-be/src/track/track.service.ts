@@ -49,7 +49,7 @@ export class TrackService {
 
     async update(id: number, track: TrackEntity): Promise<void> {
         await this.repository.update(id, track);
-        this.io.emit('track', track);
+        this.io.emit('trackUpdate', track);
     }
 
     @Interval(1000)

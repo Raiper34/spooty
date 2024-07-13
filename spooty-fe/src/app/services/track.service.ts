@@ -47,7 +47,7 @@ export class TrackService {
     private readonly http: HttpClient,
     private readonly socket: Socket,
   ) {
-    this.socket.on('track', (track: Track) => this.store.update(upsertEntities(track)));
+    this.socket.on('trackUpdate', (track: Track) => this.store.update(upsertEntities(track)));
     this.socket.on('trackNew', ({track, playlistId}: {track: Track, playlistId: number}) =>
       this.store.update(upsertEntities([{...track, playlistId}]))
     );

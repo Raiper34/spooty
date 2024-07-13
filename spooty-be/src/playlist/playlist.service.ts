@@ -3,11 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {PlaylistEntity} from "./playlist.entity";
 import {TrackService} from "../track/track.service";
+import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
+import {Server} from "socket.io";
 const fetch = require('isomorphic-unfetch');
 const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
+@WebSocketGateway()
 @Injectable()
 export class PlaylistService {
+
+    @WebSocketServer() io: Server;
 
     constructor(
         @InjectRepository(PlaylistEntity)
@@ -27,9 +32,10 @@ export class PlaylistService {
         await this.repository.delete(id);
     }
 
-    async create(playlist: PlaylistEntity): Promise<PlaylistEntity> {
+    async create(playlist: PlaylistEntity): Promise<void> {
         const details = await getDetails(playlist.spotifyUrl);
         const savedPlaylist = await this.repository.save({...playlist, name: details.preview.title});
+        this.io.emit('playlistNew', savedPlaylist);
         for(let track of details.tracks) {
             await this.trackService.create({
                 artist: track.artist,
@@ -37,10 +43,10 @@ export class PlaylistService {
                 spotifyUrl: track.previewUrl,
             }, savedPlaylist);
         }
-        return savedPlaylist;
     }
 
-    async update(id: number, track: PlaylistEntity): Promise<void> {
-        await this.repository.update(id, track);
+    async update(id: number, playlist: PlaylistEntity): Promise<void> {
+        await this.repository.update(id, playlist);
+        this.io.emit('trackPlaylist', playlist);
     }
 }

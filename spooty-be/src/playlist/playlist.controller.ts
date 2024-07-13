@@ -1,7 +1,6 @@
 import {Body, Controller, Get, Post} from '@nestjs/common';
 import {PlaylistService} from "./playlist.service";
 import {PlaylistModel} from "./playlist.model";
-import {PlaylistEntity} from "./playlist.entity";
 
 @Controller('playlist')
 export class PlaylistController {
@@ -17,7 +16,7 @@ export class PlaylistController {
     }
 
     @Post()
-    async create(@Body() playlist: PlaylistModel): Promise<PlaylistEntity> {
-        return await this.service.create(playlist);
+    async create(@Body() playlist: PlaylistModel): Promise<void> {
+        await this.service.create(playlist);
     }
 }
