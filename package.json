@@ -1,16 +1,13 @@
 {
   "name": "spooty",
-  "workspaces": [
-    "spooty-be",
-    "spooty-fe"
-  ],
+  "workspaces": ["src/*"],
   "scripts": {
-    "start:be": "npm run start:dev -w spooty-be",
-    "start:fe": "npm run start -w spooty-fe",
-    "build:be": "npm run build -w spooty-be",
-    "build:fe": "npm run build -w spooty-fe",
+    "start:be": "npm run start:dev -w backend",
+    "start:fe": "npm run start -w frontend",
+    "build:be": "npm run build -w backend",
+    "build:fe": "npm run build -w frontend",
     "build": "npm run build:be npm run build:fe",
-    "gen:fe": "npm run gen -w spooty-fe",
-    "start": "npm run start:prod -w spooty-be"
+    "gen:fe": "npm run gen -w frontend",
+    "start": "npm run start:prod -w backend"
   }
 }
