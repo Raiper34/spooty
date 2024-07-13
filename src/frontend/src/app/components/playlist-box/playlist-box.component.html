@@ -15,8 +15,9 @@
             <i class="fa-brands fa-spotify"></i>
           </a>
         </span>
-    <span *ngIf="!playlist.error">
-      <span class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
+    <span>
+      <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove track from list" (click)="delete(playlist.id)"></i>&nbsp;
+      <span *ngIf="!playlist.error" class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
     </span>
   </p>
   <ng-container *ngIf="playlist.collapsed">

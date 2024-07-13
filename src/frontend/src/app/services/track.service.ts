@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {createStore} from "@ngneat/elf";
-import {selectManyByPredicate, upsertEntities, withEntities} from "@ngneat/elf-entities";
+import {deleteEntities, selectManyByPredicate, upsertEntities, withEntities} from "@ngneat/elf-entities";
 import {Socket} from "ngx-socket-io";
 import {map, Observable, tap} from "rxjs";
 import {trackRequestResult} from "@ngneat/elf-requests";
@@ -41,7 +41,7 @@ export class TrackService {
 
   getAllByPlaylist(id: number, status?: TrackStatusEnum): Observable<Track[]> {
     return this.store.pipe(
-      selectManyByPredicate(({playlistId}) => playlistId === id),
+      selectManyByPredicate((track) => track?.playlistId === id),
       map(data => data.filter(item => status === undefined || item.status === status)),
     );
   }
@@ -59,6 +59,7 @@ export class TrackService {
     private readonly socket: Socket,
   ) {
     this.socket.on('trackUpdate', (track: Track) => this.store.update(upsertEntities(track)));
+    this.socket.on('trackDelete', ({id}: {id: number}) => this.store.update(deleteEntities(id)));
     this.socket.on('trackNew', ({track, playlistId}: {track: Track, playlistId: number}) =>
       this.store.update(upsertEntities([{...track, playlistId}]))
     );
@@ -69,5 +70,9 @@ export class TrackService {
       tap((data: Track[]) => this.store.update(upsertEntities(data.map(track => ({...track, playlistId}))))),
       trackRequestResult([STORE_NAME], { skipCache: true }),
     ).subscribe();
+  }
+
+  delete(id: number): void {
+    this.http.delete(`${ENDPOINT}/${id}`).subscribe();
   }
 }

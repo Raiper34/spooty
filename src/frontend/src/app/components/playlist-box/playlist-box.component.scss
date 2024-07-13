@@ -1,6 +1,14 @@
+.hover-icon {
+  display: none;
+}
+
 .panel-heading {
   padding: 5px 10px;
   border-radius: 10px;
+
+  &:hover .hover-icon {
+    display: inline;
+  }
 }
 
 .panel {

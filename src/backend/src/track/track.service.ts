@@ -40,6 +40,7 @@ export class TrackService {
 
     async remove(id: number): Promise<void> {
         await this.repository.delete(id);
+        this.io.emit('trackDelete', {id});
     }
 
     async create(track: TrackEntity, playlist?: PlaylistEntity): Promise<void> {

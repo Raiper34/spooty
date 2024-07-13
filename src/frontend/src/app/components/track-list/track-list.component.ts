@@ -13,7 +13,6 @@ import {Observable} from "rxjs";
 export class TrackListComponent {
 
   @Input() set playlistId(value: number) {
-    console.log(value);
     this.tracks$ = this.service.getAllByPlaylist(value);
   }
   tracks$!: Observable<Track[]>;
@@ -21,6 +20,9 @@ export class TrackListComponent {
 
   constructor(
     private readonly service: TrackService,
-  ) {
+  ) { }
+
+  delete(id: number): void {
+    this.service.delete(id);
   }
 }

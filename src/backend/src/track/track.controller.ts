@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Res, StreamableFile} from '@nestjs/common';
+import {Controller, Delete, Get, Param, Res, StreamableFile} from '@nestjs/common';
 import {TrackService} from "./track.service";
 import {TrackModel} from "./track.model";
 import {createReadStream} from "fs";
@@ -29,5 +29,10 @@ export class TrackController {
         const file = createReadStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song}.mp3`));
         res.set({'Content-Disposition': `attachment; filename="${track.artist} - ${track.song}.mp3"`,});
         return new StreamableFile(file);
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: number): Promise<void> {
+        return this.service.remove(id);
     }
 }

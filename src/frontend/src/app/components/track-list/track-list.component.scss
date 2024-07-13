@@ -1,3 +1,11 @@
+.hover-icon {
+  display: none;
+}
+
 .panel-block {
   padding: 5px 10px;
+
+  &:hover .hover-icon {
+    display: inline;
+  }
 }

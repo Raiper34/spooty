@@ -29,9 +29,9 @@ export class PlaylistBoxComponent {
 
   @Input() set playlist(val: Playlist & PlaylistUi) {
     this._playlist = val;
-    this.trackCount$ = this.playlistService.getTrackCount(val.id);
-    this.trackCompletedCount$ = this.playlistService.getCompletedTrackCount(val.id);
-    this.statusClass$ = this.playlistService.getStatus$(val.id).pipe(
+    this.trackCount$ = this.service.getTrackCount(val.id);
+    this.trackCompletedCount$ = this.service.getCompletedTrackCount(val.id);
+    this.statusClass$ = this.service.getStatus$(val.id).pipe(
       map(status => STATUS2CLASS[status])
     );
   }
@@ -43,10 +43,14 @@ export class PlaylistBoxComponent {
   trackCompletedCount$!: Observable<number>;
   statusClass$!: Observable<string>;
 
-  constructor(private readonly playlistService: PlaylistService) { }
+  constructor(private readonly service: PlaylistService) { }
 
 
   toggleCollapse(playlistId: number): void {
-    this.playlistService.toggleCollapsed(playlistId);
+    this.service.toggleCollapsed(playlistId);
+  }
+
+  delete(id: number): void {
+    this.service.delete(id);
   }
 }

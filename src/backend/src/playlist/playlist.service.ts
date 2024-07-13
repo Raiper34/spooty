@@ -30,6 +30,7 @@ export class PlaylistService {
 
     async remove(id: number): Promise<void> {
         await this.repository.delete(id);
+        this.io.emit('playlistDelete', {id});
     }
 
     async create(playlist: PlaylistEntity): Promise<void> {

@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import {createStore} from "@ngneat/elf";
 import {HttpClient} from "@angular/common/http";
 import {
+  deleteEntities,
   getEntityByPredicate,
-  selectAllEntities, selectEntities,
+  selectAllEntities, selectEntities, selectEntity,
   selectEntityByPredicate,
   setEntities,
   UIEntitiesRef,
@@ -64,6 +65,7 @@ export class PlaylistService {
               private readonly trackService: TrackService,
   ) {
     this.socket.on('playlistUpdate', (playlist: Playlist) => this.store.update(upsertEntities(playlist)));
+    this.socket.on('playlistDelete', ({id}: {id: number}) => this.store.update(deleteEntities(Number(id))));
     this.socket.on('playlistNew', (playlist: Playlist) =>
       this.store.update(
         upsertEntities(playlist),
@@ -72,8 +74,8 @@ export class PlaylistService {
     );
   }
 
-  getById(playlistId: number): Observable<Playlist | undefined> {
-    return this.store.pipe(selectEntityByPredicate(({id}) => id === playlistId));
+  getById(id: number): Observable<Playlist | undefined> {
+    return this.store.pipe(selectEntity(id));
   }
 
   getTrackCount(id: number): Observable<number> {
@@ -125,5 +127,9 @@ export class PlaylistService {
 
   toggleCollapsed(id: number): void {
     this.store.update(updateEntities(id, old => ({...old, collapsed: !old.collapsed}), { ref: UIEntitiesRef }))
+  }
+
+  delete(id: number): void {
+    this.http.delete(`${ENDPOINT}/${id}`).subscribe();
   }
 }

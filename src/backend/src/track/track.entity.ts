@@ -29,6 +29,6 @@ export class TrackEntity {
     @Column({default: Date.now()})
     createdAt?: number;
 
-    @ManyToOne(() => PlaylistEntity, playlist => playlist.tracks)
+    @ManyToOne(() => PlaylistEntity, playlist => playlist.tracks, {onDelete: "CASCADE"})
     playlist?: PlaylistEntity;
 }
