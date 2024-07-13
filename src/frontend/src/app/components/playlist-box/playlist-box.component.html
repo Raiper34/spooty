@@ -9,7 +9,11 @@
           <ng-template #noErrorTemplate>
             <span class="is-size-6 has-text-weight-semibold">{{playlist.name}}</span>
           </ng-template>&nbsp;
-          <a [href]="playlist.spotifyUrl" target="_blank" class="is-color-black"><i class="fa-brands fa-spotify"></i></a>
+          <a [href]="playlist.spotifyUrl"
+             target="_blank"
+             class="is-color-black" title="Link to Spotify url to be download from">
+            <i class="fa-brands fa-spotify"></i>
+          </a>
         </span>
     <span *ngIf="!playlist.error">
       <span class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;

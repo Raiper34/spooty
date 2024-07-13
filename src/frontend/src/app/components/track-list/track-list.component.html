@@ -1,13 +1,21 @@
 <a class="panel-block is-flex is-justify-content-space-between" *ngFor="let track of tracks$ | async">
   <div>
     <span>{{ track.artist }} - {{ track.song }}</span>&nbsp;
-    <a [href]="track.spotifyUrl" target="_blank" class="is-color-primary margin-left">
+    <a [href]="track.spotifyUrl"
+       target="_blank"
+       class="is-color-primary margin-left" title="Spotify preview of track that will be downloaded">
       <i class="fa-brands fa-spotify"></i>
     </a>&nbsp;
-    <a [href]="track.youtubeUrl" target="_blank" class="is-color-danger is-color-black">
+    <a [href]="track.youtubeUrl"
+       target="_blank"
+       class="is-color-danger is-color-black" title="Youtube searched track that will be downloaded">
       <i class="fa-brands fa-youtube"></i>
     </a>&nbsp;
-    <a *ngIf="track.status === trackStatuses.Completed" href="api/track/download/{{track.id}}" class="is-color-info" download>
+    <a *ngIf="track.status === trackStatuses.Completed"
+       href="api/track/download/{{track.id}}"
+       class="is-color-info"
+       title="Download downloaded and locally saved file"
+       download>
       <i class="fa-solid fa-download"></i>
     </a>
   </div>
