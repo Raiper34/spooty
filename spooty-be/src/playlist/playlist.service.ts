@@ -33,10 +33,17 @@ export class PlaylistService {
     }
 
     async create(playlist: PlaylistEntity): Promise<void> {
-        const details = await getDetails(playlist.spotifyUrl);
-        const savedPlaylist = await this.repository.save({...playlist, name: details.preview.title});
+        let details;
+        let playlist2Save: PlaylistEntity;
+        try {
+            details = await getDetails(playlist.spotifyUrl);
+            playlist2Save = {...playlist, name: details.preview.title};
+        } catch (err) {
+            playlist2Save = {...playlist, error: String(err)};
+        }
+        const savedPlaylist = await this.repository.save(playlist2Save);
         this.io.emit('playlistNew', savedPlaylist);
-        for(let track of details.tracks) {
+        for(let track of details?.tracks ?? []) {
             await this.trackService.create({
                 artist: track.artist,
                 song: track.name,

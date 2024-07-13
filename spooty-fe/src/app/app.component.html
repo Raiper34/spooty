@@ -14,7 +14,11 @@
       <p class="subtitle">Download</p>
       <div class="is-flex">
         <input class="input" type="text" [(ngModel)]="url" placeholder="Paste playlist/song/artist url"/>
-        <button class="button is-primary" [class.is-loading]="(createLoading$ | async)?.isLoading" (click)="download()">
+        <button class="button is-primary"
+                [class.is-loading]="(createLoading$ | async)?.isLoading"
+                (click)="download()"
+                [disabled]="!url"
+        >
           <i class="fa-solid fa-download"></i> Download
         </button>
       </div>
@@ -24,22 +28,7 @@
     <div class="is-flex is-align-items-center">
       <p class="subtitle">Playlists</p>&nbsp;
     </div>
-
-    <article class="panel is-primary" *ngFor="let playlist of playlists$ | async">
-      <p class="panel-heading is-flex is-justify-content-space-between">
-        <span>
-          <i class="is-clickable fa-solid"
-             [ngClass]="playlist.collapsed ? 'fa-caret-up' : 'fa-caret-down'"
-             (click)="toggleCollapse(playlist.id)"
-          ></i>&nbsp;
-          <span>{{playlist.name}}</span>
-        </span>
-        <a [href]="playlist.spotifyUrl" target="_blank" class="is-color-black"><i class="fa-brands fa-spotify"></i></a>
-      </p>
-      <ng-container *ngIf="playlist.collapsed">
-        <app-track-list [playlistId]="playlist.id"></app-track-list>
-      </ng-container>
-    </article>
+      <app-playlist-box *ngFor="let playlist of playlists$ | async" [playlist]="playlist"></app-playlist-box>
     </div>
   </div>
 </section>

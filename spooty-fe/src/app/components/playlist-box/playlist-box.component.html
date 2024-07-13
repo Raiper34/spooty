@@ -1,0 +1,21 @@
+<article class="panel" [ngClass]="playlist.error ? 'is-danger' : 'is-primary'">
+  <p class="panel-heading is-flex is-justify-content-space-between">
+        <span>
+          <i class="is-clickable fa-solid"
+             [ngClass]="playlist.collapsed ? 'fa-caret-up' : 'fa-caret-down'"
+             (click)="toggleCollapse(playlist.id)"
+          ></i>&nbsp;
+          <span *ngIf="playlist.error; else noErrorTemplate" class="is-size-6 has-text-weight-medium">{{playlist.error}}</span>
+          <ng-template #noErrorTemplate>
+            <span class="is-size-6 has-text-weight-semibold">{{playlist.name}}</span>
+          </ng-template>&nbsp;
+          <a [href]="playlist.spotifyUrl" target="_blank" class="is-color-black"><i class="fa-brands fa-spotify"></i></a>
+        </span>
+    <span *ngIf="!playlist.error">
+      <span class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
+    </span>
+  </p>
+  <ng-container *ngIf="playlist.collapsed">
+    <app-track-list [playlistId]="playlist.id"></app-track-list>
+  </ng-container>
+</article>

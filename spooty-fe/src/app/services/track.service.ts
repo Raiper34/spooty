@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {createStore} from "@ngneat/elf";
 import {selectManyByPredicate, upsertEntities, withEntities} from "@ngneat/elf-entities";
 import {Socket} from "ngx-socket-io";
-import {tap} from "rxjs";
+import {map, Observable, tap} from "rxjs";
 import {trackRequestResult} from "@ngneat/elf-requests";
 import {HttpClient} from "@angular/common/http";
 
@@ -39,8 +39,12 @@ export class TrackService {
     withEntities<Track>(),
   );
 
-  getAllByPlaylist(id: number) {
+  getAllByPlaylist(id: number): Observable<Track[]> {
     return this.store.pipe(selectManyByPredicate(({playlistId}) => playlistId === id))
+  }
+
+  getCompletedByPlaylist(id: number): Observable<Track[]> {
+    return this.getAllByPlaylist(id).pipe(map(data => data.filter(item => item.status === TrackStatusEnum.Completed)));
   }
 
   constructor(

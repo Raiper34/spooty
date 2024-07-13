@@ -10,7 +10,7 @@ import {
   withUIEntities
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
-import {map, tap} from "rxjs";
+import {map, Observable, tap} from "rxjs";
 import {Track, TrackService} from "./track.service";
 import {Socket} from "ngx-socket-io";
 
@@ -20,8 +20,9 @@ const CREATE_LOADING = 'CREATE_LOADING';
 
 export interface Playlist {
   id: number;
-  name: string;
+  name?: string;
   spotifyUrl: string;
+  error?: string;
   createdAt: number;
 }
 
@@ -59,6 +60,14 @@ export class PlaylistService {
         upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
       )
     );
+  }
+
+  getTrackCount(id: number): Observable<number> {
+    return this.trackService.getAllByPlaylist(id).pipe(map(data => data.length));
+  }
+
+  getCompletedTrackCount(id: number): Observable<number> {
+    return this.trackService.getCompletedByPlaylist(id).pipe(map(data => data.length));
   }
 
   fetch(): void {

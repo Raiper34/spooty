@@ -6,7 +6,7 @@ import {PlaylistEntity} from "../playlist/playlist.entity";
 import {Interval} from "@nestjs/schedule";
 import {TrackStatusEnum} from "./track.model";
 import * as yts from 'yt-search';
-import * as ytdl from 'ytdl-core';
+import * as ytdl from '@distube/ytdl-core';
 import * as fs from 'fs';
 import {ConfigService} from "@nestjs/config";
 import {resolve} from "path";

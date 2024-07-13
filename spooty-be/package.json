@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.13.5",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
@@ -35,8 +36,7 @@
     "rxjs": "^7.8.1",
     "spotify-url-info": "^3.2.15",
     "sqlite3": "^5.1.7",
-    "yt-search": "^2.11.0",
-    "ytdl-core": "^4.11.5"
+    "yt-search": "^2.11.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
