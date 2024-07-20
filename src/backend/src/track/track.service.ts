@@ -106,7 +106,9 @@ export class TrackService {
         return new Promise((res, reject) => {
             const audio = ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"})
                 .on('error', (err) => reject(err));
-            ffmpeg(audio).format(this.configService.get<string>('FORMAT'))
+            ffmpeg(audio)
+                .outputOptions('-metadata', `title=${track.song}`, '-metadata', `artist=${track.artist}`)
+                .format(this.configService.get<string>('FORMAT'))
                 .on('error', (err) => reject(err))
                 .pipe(
                     fs.createWriteStream(
