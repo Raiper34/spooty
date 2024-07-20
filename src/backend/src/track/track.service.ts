@@ -13,6 +13,7 @@ import {ConfigService} from "@nestjs/config";
 import {resolve} from "path";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
+import * as ffmpeg from 'fluent-ffmpeg';
 
 @WebSocketGateway()
 @Injectable()
@@ -102,13 +103,19 @@ export class TrackService {
     }
 
     private youtubeDownload(track: TrackEntity): Promise<void> {
-        return new Promise((res, reject) =>
-            ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"})
-                .on('error', (err) => reject(err)).pipe(
-                    fs.createWriteStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), `${track.artist} - ${track.song.replace('/', '')}.mp3`))
-                        .on('finish', () => res())
-                        .on('error', (err) => reject(err))
-            )
-        );
+        return new Promise((res, reject) => {
+            const audio = ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"})
+                .on('error', (err) => reject(err));
+            ffmpeg(audio).format(this.configService.get<string>('FORMAT'))
+                .on('error', (err) => reject(err))
+                .pipe(
+                    fs.createWriteStream(
+                        resolve(
+                            __dirname, '..', this.configService.get<string>('DOWNLOADS'),
+                            `${track.artist} - ${track.song.replace('/', '')}.${this.configService.get<string>('FORMAT')}`
+                        )
+                    ).on('finish', () => res()).on('error', (err) => reject(err))
+                );
+        });
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "spooty",
-  "workspaces": ["src/*"],
+  "workspaces": ["src/backend", "src/frontend"],
   "scripts": {
     "start:be": "npm run start:dev -w backend",
     "start:fe": "npm run start -w frontend",
