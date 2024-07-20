@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
 import {CommonModule, NgFor} from "@angular/common";
-import {PlaylistService} from "./services/playlist.service";
+import {PlaylistService, PlaylistStatusEnum} from "./services/playlist.service";
 import {PlaylistBoxComponent} from "./components/playlist-box/playlist-box.component";
 
 @Component({
@@ -29,5 +29,13 @@ export class AppComponent {
   download(): void {
     this.url && this.playlistService.create(this.url);
     this.url = '';
+  }
+
+  deleteCompleted(): void {
+    this.playlistService.deleteAllByStatus(PlaylistStatusEnum.Completed);
+  }
+
+  deleteFailed(): void {
+    this.playlistService.deleteAllByStatus(PlaylistStatusEnum.Error);
   }
 }

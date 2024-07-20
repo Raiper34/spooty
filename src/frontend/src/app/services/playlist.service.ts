@@ -13,7 +13,7 @@ import {
   withUIEntities
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
-import {combineLatest, map, Observable, tap} from "rxjs";
+import {combineLatest, filter, first, map, Observable, of, switchMap, tap} from "rxjs";
 import {Track, TrackService} from "./track.service";
 import {Socket} from "ngx-socket-io";
 
@@ -34,7 +34,7 @@ export interface PlaylistUi {
   collapsed: boolean;
 }
 
-export enum PLaylistStatusEnum {
+export enum PlaylistStatusEnum {
   InProgress,
   Completed,
   Warning,
@@ -90,7 +90,7 @@ export class PlaylistService {
     return this.trackService.getErrorByPlaylist(id).pipe(map(data => data.length));
   }
 
-  getStatus$(id: number): Observable<PLaylistStatusEnum> {
+  getStatus$(id: number): Observable<PlaylistStatusEnum> {
     return combineLatest([
       this.getById(id),
       this.getTrackCount(id),
@@ -98,14 +98,31 @@ export class PlaylistService {
       this.getErrorTrackCount(id),
     ]).pipe(map(([playlist, trackCount, completedCount, errorCount]) => {
       if (playlist?.error || errorCount === trackCount) {
-        return PLaylistStatusEnum.Error;
+        return PlaylistStatusEnum.Error;
       } else if (trackCount === completedCount) {
-        return PLaylistStatusEnum.Completed;
+        return PlaylistStatusEnum.Completed;
       } else if (errorCount > 1) {
-        return PLaylistStatusEnum.Warning;
+        return PlaylistStatusEnum.Warning;
       }
-      return PLaylistStatusEnum.InProgress;
+      return PlaylistStatusEnum.InProgress;
     }));
+  }
+
+  deleteAllByStatus(status: PlaylistStatusEnum): void {
+    this.all$.pipe(
+      first(),
+      switchMap(playlists =>
+        combineLatest(playlists.map(item => this.deleteIfStatusEquals$(item.id, status)))
+      )
+    ).subscribe();
+  }
+
+  private deleteIfStatusEquals$(id: number, status2Filter: PlaylistStatusEnum): Observable<void> {
+    return combineLatest([of(id), this.getStatus$(id)]).pipe(
+      first(),
+      filter(([_, status]) => status === status2Filter),
+      switchMap(([id]) => this.delete$(id)),
+    );
   }
 
   fetch(): void {
@@ -130,6 +147,14 @@ export class PlaylistService {
   }
 
   delete(id: number): void {
-    this.http.delete(`${ENDPOINT}/${id}`).subscribe();
+    this.delete$(id).subscribe();
+  }
+
+  private delete$(id: number): Observable<void> {
+    return this.http.delete<void>(`${ENDPOINT}/${id}`);
+  }
+
+  retryFailed(id: number): void {
+    this.http.get<void>(`${ENDPOINT}/retry/${id}`).subscribe();
   }
 }

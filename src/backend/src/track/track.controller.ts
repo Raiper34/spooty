@@ -35,4 +35,9 @@ export class TrackController {
     remove(@Param('id') id: number): Promise<void> {
         return this.service.remove(id);
     }
+
+    @Get('retry/:id')
+    retry(@Param('id') id: number): Promise<void> {
+        return this.service.retry(id);
+    }
 }

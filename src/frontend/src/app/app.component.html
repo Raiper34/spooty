@@ -25,8 +25,16 @@
     </div>
     <hr>
     <div class="box">
-    <div class="is-flex is-align-items-center">
-      <p class="subtitle">Playlists</p>&nbsp;
+    <div class="is-flex is-justify-content-space-between">
+      <p class="subtitle">Playlists</p>
+      <div class="buttons has-addons">
+        <button class="button is-outlined is-success" title="Remove completed from list" (click)="deleteCompleted()">
+          <i class="fa-solid fa-check"></i>
+        </button>
+        <button class="button is-outlined is-danger" title="Remove failed from list" (click)="deleteFailed()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
     </div>
       <app-playlist-box *ngFor="let playlist of playlists$ | async" [playlist]="playlist"></app-playlist-box>
     </div>

@@ -25,4 +25,8 @@ export class TrackListComponent {
   delete(id: number): void {
     this.service.delete(id);
   }
+
+  retry(id: number): void {
+    this.service.retry(id);
+  }
 }

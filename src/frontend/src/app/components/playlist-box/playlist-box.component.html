@@ -16,7 +16,8 @@
           </a>
         </span>
     <span>
-      <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove track from list" (click)="delete(playlist.id)"></i>&nbsp;
+      <i class="fa-solid fa-repeat is-clickable hover-icon" title="Retry download failed tracks" (click)="retryFailed(playlist.id)"></i>&nbsp;
+      <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove playlist from list" (click)="delete(playlist.id)"></i>&nbsp;
       <span *ngIf="!playlist.error" class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
     </span>
   </p>

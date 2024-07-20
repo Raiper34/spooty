@@ -6,13 +6,13 @@ import {PlaylistEntity} from "../playlist/playlist.entity";
 import {Interval} from "@nestjs/schedule";
 import {TrackStatusEnum} from "./track.model";
 import * as yts from 'yt-search';
+import {SearchResult} from 'yt-search';
 import * as ytdl from '@distube/ytdl-core';
 import * as fs from 'fs';
 import {ConfigService} from "@nestjs/config";
 import {resolve} from "path";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
-import {SearchResult} from "yt-search";
 
 @WebSocketGateway()
 @Injectable()
@@ -53,6 +53,11 @@ export class TrackService {
         this.io.emit('trackUpdate', track);
     }
 
+    async retry(id: number): Promise<void> {
+        const track = await this.findOne(id);
+        await this.update(id, {...track, status: TrackStatusEnum.New});
+    }
+
     @Interval(1000)
     async findOnYoutube() {
         const newTracks = await this.findAll({status: TrackStatusEnum.New});
@@ -66,6 +71,7 @@ export class TrackService {
                 youtubeResult = await yts(`${track.artist} - ${track.song}`);
                 updatedTrack = {...track, youtubeUrl: youtubeResult.videos[0].url, status: TrackStatusEnum.Queued};
             } catch (err) {
+                console.log(err);
                 updatedTrack = {...track, error: String(err), status: TrackStatusEnum.Error};
             }
             await this.update(track.id, updatedTrack);

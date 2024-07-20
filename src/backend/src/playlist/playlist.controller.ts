@@ -24,4 +24,9 @@ export class PlaylistController {
     remove(@Param('id') id: number): Promise<void> {
         return this.service.remove(id);
     }
+
+    @Get('retry/:id')
+    retryFailedOfPlaylist(@Param('id') id: number): Promise<void> {
+        return this.service.retryFailedOfPlaylist(id);
+    }
 }

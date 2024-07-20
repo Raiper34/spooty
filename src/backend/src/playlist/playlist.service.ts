@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
 import {PlaylistEntity} from "./playlist.entity";
 import {TrackService} from "../track/track.service";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
+import {TrackStatusEnum} from "../track/track.model";
+
 const fetch = require('isomorphic-unfetch');
 const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
@@ -56,5 +58,14 @@ export class PlaylistService {
     async update(id: number, playlist: PlaylistEntity): Promise<void> {
         await this.repository.update(id, playlist);
         this.io.emit('trackPlaylist', playlist);
+    }
+
+    async retryFailedOfPlaylist(id: number): Promise<void> {
+        const tracks = await this.trackService.getAllByPlaylist(id);
+        for(let track of tracks) {
+            if (track.status === TrackStatusEnum.Error) {
+                await this.trackService.retry(track.id);
+            }
+        }
     }
 }

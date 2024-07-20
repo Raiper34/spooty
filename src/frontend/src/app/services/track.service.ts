@@ -75,4 +75,8 @@ export class TrackService {
   delete(id: number): void {
     this.http.delete(`${ENDPOINT}/${id}`).subscribe();
   }
+
+  retry(id: number): void {
+    this.http.get(`${ENDPOINT}/retry/${id}`).subscribe();
+  }
 }

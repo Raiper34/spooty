@@ -1,15 +1,15 @@
 import {Component, Input} from '@angular/core';
 import {AsyncPipe, CommonModule, NgForOf, NgIf} from "@angular/common";
 import {TrackListComponent} from "../track-list/track-list.component";
-import {Playlist, PlaylistService, PLaylistStatusEnum, PlaylistUi} from "../../services/playlist.service";
+import {Playlist, PlaylistService, PlaylistStatusEnum, PlaylistUi} from "../../services/playlist.service";
 import {Observable, map} from "rxjs";
 
 const STATUS2CLASS = {
-  [PLaylistStatusEnum.Completed]: 'is-success',
-  [PLaylistStatusEnum.InProgress]: 'is-info',
-  [PLaylistStatusEnum.Warning]: 'is-warning',
-  [PLaylistStatusEnum.Error]: 'is-danger',
-  [PLaylistStatusEnum.Subscribed]: 'is-primary',
+  [PlaylistStatusEnum.Completed]: 'is-success',
+  [PlaylistStatusEnum.InProgress]: 'is-info',
+  [PlaylistStatusEnum.Warning]: 'is-warning',
+  [PlaylistStatusEnum.Error]: 'is-danger',
+  [PlaylistStatusEnum.Subscribed]: 'is-primary',
 }
 
 @Component({
@@ -52,5 +52,9 @@ export class PlaylistBoxComponent {
 
   delete(id: number): void {
     this.service.delete(id);
+  }
+
+  retryFailed(id: number): void {
+    this.service.retryFailed(id);
   }
 }

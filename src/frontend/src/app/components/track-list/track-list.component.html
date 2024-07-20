@@ -20,6 +20,7 @@
     </a>
   </div>
   <div>
+    <i *ngIf="track.status === trackStatuses.Error" class="fa-solid fa-repeat hover-icon" title="Retry to download" (click)="retry(track.id)"></i>&nbsp;
     <i class="fa-solid fa-xmark hover-icon" title="Remove track from list" (click)="delete(track.id)"></i>&nbsp;
     <ng-container [ngSwitch]="track.status">
       <span *ngSwitchCase="trackStatuses.New" class="tag is-info">New</span>
