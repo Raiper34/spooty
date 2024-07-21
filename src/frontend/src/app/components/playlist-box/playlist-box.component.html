@@ -16,6 +16,11 @@
           </a>
         </span>
     <span>
+      <i class="fa-solid is-clickable hover-icon"
+         [ngClass]="playlist.active ? 'fa-lock' : 'fa-lock-open'"
+         [title]="playlist.active ? 'Subscribe to playlist changes' : 'Unsubscribe from playlist changes'"
+         (click)="setActive(playlist.id, playlist.active)"
+      ></i>&nbsp;
       <i class="fa-solid fa-repeat is-clickable hover-icon" title="Retry download failed tracks" (click)="retryFailed(playlist.id)"></i>&nbsp;
       <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove playlist from list" (click)="delete(playlist.id)"></i>&nbsp;
       <span *ngIf="!playlist.error" class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;

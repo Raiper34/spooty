@@ -5,4 +5,5 @@ export interface PlaylistModel {
     tracks?: any[]; //todo fix it
     error?: string;
     createdAt?: number;
+    active?: boolean;
 }

@@ -16,6 +16,9 @@ export class PlaylistEntity {
     @Column({ nullable: true })
     error?: string;
 
+    @Column({default: false})
+    active?: boolean;
+
     @Column({default: () => Date.now()})
     createdAt?: number;
 

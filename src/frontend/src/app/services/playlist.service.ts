@@ -26,6 +26,7 @@ export interface Playlist {
   name?: string;
   spotifyUrl: string;
   error?: string;
+  active: boolean;
   createdAt: number;
 }
 
@@ -55,7 +56,7 @@ export class PlaylistService {
   all$ = this.store.combine({
     entities: this.store.pipe(selectAllEntities()),
     UIEntities: this.store.pipe(selectEntities({ ref: UIEntitiesRef })),
-  }).pipe(unionEntities(), map(data => data.sort((a, b) => b.createdAt - a.createdAt)));
+  }).pipe(unionEntities(), map(data => data.sort((a, b) => this.sort(a, b))));
 
   loading$ = this.store.pipe(joinRequestResult([STORE_NAME]));
   createLoading$ = this.store.pipe(joinRequestResult([CREATE_LOADING], { initialStatus: 'idle' }));
@@ -100,7 +101,7 @@ export class PlaylistService {
       if (playlist?.error || errorCount === trackCount) {
         return PlaylistStatusEnum.Error;
       } else if (trackCount === completedCount) {
-        return PlaylistStatusEnum.Completed;
+        return playlist?.active ? PlaylistStatusEnum.Subscribed : PlaylistStatusEnum.Completed;
       } else if (errorCount > 1) {
         return PlaylistStatusEnum.Warning;
       }
@@ -156,5 +157,13 @@ export class PlaylistService {
 
   retryFailed(id: number): void {
     this.http.get<void>(`${ENDPOINT}/retry/${id}`).subscribe();
+  }
+
+  setActive(id: number, active: boolean): void {
+    this.http.put<void>(`${ENDPOINT}/${id}`, {active}).subscribe();
+  }
+
+  private sort(a: Playlist & PlaylistUi, b: Playlist & PlaylistUi): number {
+    return a.active === b.active ? (b.createdAt - a.createdAt) : (a.active < b.active ? 1 : -1);
   }
 }

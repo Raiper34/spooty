@@ -10,6 +10,7 @@ import {resolve} from "path";
 import {ConfigService} from "@nestjs/config";
 import {EnviromentEnum} from "../enviroment.enum";
 import * as fs from 'fs';
+import {Interval} from "@nestjs/schedule";
 const fetch = require('isomorphic-unfetch');
 const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
@@ -26,8 +27,8 @@ export class PlaylistService {
         private readonly configService: ConfigService,
     ) {}
 
-    findAll(): Promise<PlaylistEntity[]> {
-        return this.repository.find({relations: {tracks: true}});
+    findAll(relations: Record<string, boolean> = {tracks: true}, where?: Partial<PlaylistEntity>): Promise<PlaylistEntity[]> {
+        return this.repository.find({where, relations});
     }
 
     findOne(id: number): Promise<PlaylistEntity | null> {
@@ -48,10 +49,8 @@ export class PlaylistService {
         } catch (err) {
             playlist2Save = {...playlist, error: String(err)};
         }
-        const savedPlaylist = await this.repository.save(playlist2Save);
-        this.io.emit('playlistNew', savedPlaylist);
-        const folderName = resolve(__dirname, '..',this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), savedPlaylist.name);
-        !fs.existsSync(folderName) && fs.mkdirSync(folderName);
+        const savedPlaylist = await this.save(playlist2Save);
+        this.createPlaylistFolderStructure(savedPlaylist.name);
         for(let track of details?.tracks ?? []) {
             await this.trackService.create({
                 artist: track.artist,
@@ -61,9 +60,16 @@ export class PlaylistService {
         }
     }
 
-    async update(id: number, playlist: PlaylistEntity): Promise<void> {
+    async save(playlist: PlaylistEntity): Promise<PlaylistEntity> {
+        const savedPlaylist = await this.repository.save(playlist);
+        this.io.emit('playlistNew', savedPlaylist);
+        return savedPlaylist;
+    }
+
+    async update(id: number, playlist: Partial<PlaylistEntity>): Promise<void> {
         await this.repository.update(id, playlist);
-        this.io.emit('trackPlaylist', playlist);
+        const dbPlaylist = await this.findOne(id);
+        this.io.emit('playlistUpdate', dbPlaylist);
     }
 
     async retryFailedOfPlaylist(id: number): Promise<void> {
@@ -71,6 +77,36 @@ export class PlaylistService {
         for(let track of tracks) {
             if (track.status === TrackStatusEnum.Error) {
                 await this.trackService.retry(track.id);
+            }
+        }
+    }
+
+    private createPlaylistFolderStructure(playlistName): void {
+        const folderName = resolve(__dirname, '..',this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), playlistName);
+        !fs.existsSync(folderName) && fs.mkdirSync(folderName);
+    }
+
+    @Interval(3600000)
+    async checkActivePlaylists(): Promise<void> {
+        const activePlaylists = await this.findAll({}, {active: true});
+        for (let playlist of activePlaylists) {
+            let details;
+            try {
+                details = await getDetails(playlist.spotifyUrl);
+            } catch (err) {
+                await this.update(playlist.id, {...playlist, error: String(err)});
+            }
+            this.createPlaylistFolderStructure(playlist.name);
+            for(let track of details?.tracks ?? []) {
+                const track2Save = {
+                    artist: track.artist,
+                    song: track.name,
+                    spotifyUrl: track.previewUrl,
+                }
+                const isExist = !!(await this.trackService.findAll({...track2Save, playlist: {id: playlist.id}})).length;
+                if(!isExist) {
+                    await this.trackService.create(track2Save, playlist);
+                }
             }
         }
     }

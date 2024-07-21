@@ -28,7 +28,7 @@ export class TrackService {
         private readonly configService: ConfigService,
     ) {}
 
-    findAll(where?: Partial<TrackEntity>, relations: string[] = []): Promise<TrackEntity[]> {
+    findAll(where?: {[key: string]: any}, relations: Record<string, boolean> = {}): Promise<TrackEntity[]> {
         return this.repository.find({where, relations});
     }
 
@@ -82,7 +82,7 @@ export class TrackService {
 
     @Interval(1000)
     async download() {
-        const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued}, ['playlist']);
+        const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued}, {playlist: true});
         for (let track of queuedTracks) {
             await this.update(track.id, {...track, status: TrackStatusEnum.Downloading});
         }

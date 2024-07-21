@@ -57,4 +57,8 @@ export class PlaylistBoxComponent {
   retryFailed(id: number): void {
     this.service.retryFailed(id);
   }
+
+  setActive(id: number, currentActive: boolean = false): void {
+    this.service.setActive(id, !currentActive)
+  }
 }
