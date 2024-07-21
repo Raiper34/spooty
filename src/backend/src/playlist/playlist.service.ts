@@ -6,7 +6,10 @@ import {TrackService} from "../track/track.service";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
 import {TrackStatusEnum} from "../track/track.model";
-
+import {resolve} from "path";
+import {ConfigService} from "@nestjs/config";
+import {EnviromentEnum} from "../enviroment.enum";
+import * as fs from 'fs';
 const fetch = require('isomorphic-unfetch');
 const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
@@ -20,6 +23,7 @@ export class PlaylistService {
         @InjectRepository(PlaylistEntity)
         private repository: Repository<PlaylistEntity>,
         private readonly trackService: TrackService,
+        private readonly configService: ConfigService,
     ) {}
 
     findAll(): Promise<PlaylistEntity[]> {
@@ -46,6 +50,8 @@ export class PlaylistService {
         }
         const savedPlaylist = await this.repository.save(playlist2Save);
         this.io.emit('playlistNew', savedPlaylist);
+        const folderName = resolve(__dirname, '..',this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), savedPlaylist.name);
+        !fs.existsSync(folderName) && fs.mkdirSync(folderName);
         for(let track of details?.tracks ?? []) {
             await this.trackService.create({
                 artist: track.artist,

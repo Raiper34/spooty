@@ -28,8 +28,8 @@ export class TrackService {
         private readonly configService: ConfigService,
     ) {}
 
-    findAll(criteria?: Partial<TrackEntity>): Promise<TrackEntity[]> {
-        return this.repository.find({where: criteria});
+    findAll(where?: Partial<TrackEntity>, relations: string[] = []): Promise<TrackEntity[]> {
+        return this.repository.find({where, relations});
     }
 
     getAllByPlaylist(id: number): Promise<TrackEntity[]> {
@@ -82,14 +82,14 @@ export class TrackService {
 
     @Interval(1000)
     async download() {
-        const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued});
+        const queuedTracks = await this.findAll({status: TrackStatusEnum.Queued}, ['playlist']);
         for (let track of queuedTracks) {
             await this.update(track.id, {...track, status: TrackStatusEnum.Downloading});
         }
         for(let track of queuedTracks) {
             let error: string;
             try  {
-                await this.youtubeDownload(track);
+                await this.youtubeDownload(track, track.playlist.name);
             } catch(err) {
                 console.log(err);
                 error = String(err);
@@ -103,7 +103,7 @@ export class TrackService {
         }
     }
 
-    private youtubeDownload(track: TrackEntity): Promise<void> {
+    private youtubeDownload(track: TrackEntity, playlistName: string): Promise<void> {
         return new Promise((res, reject) => {
             const audio = ytdl(track.youtubeUrl, {quality: "highestaudio", filter: "audioonly"})
                 .on('error', (err) => reject(err));
@@ -114,7 +114,7 @@ export class TrackService {
                 .pipe(
                     fs.createWriteStream(
                         resolve(
-                            __dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH),
+                            __dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), playlistName,
                             `${track.artist} - ${track.song.replace('/', '')}.${this.configService.get<string>(EnviromentEnum.FORMAT)}`
                         )
                     ).on('finish', () => res()).on('error', (err) => reject(err))
