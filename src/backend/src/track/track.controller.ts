@@ -5,6 +5,7 @@ import {createReadStream} from "fs";
 import { resolve } from 'path';
 import type { Response } from 'express';
 import {ConfigService} from "@nestjs/config";
+import {EnviromentEnum} from "../enviroment.enum";
 
 @Controller('track')
 export class TrackController {
@@ -26,8 +27,8 @@ export class TrackController {
     @Get('download/:id')
     async getFile(@Res({ passthrough: true }) res: Response, @Param('id') id: number): Promise<StreamableFile> {
         const track = await this.service.findOne(id);
-        const fileName = `${track.artist} - ${track.song}.${this.configService.get<string>('FORMAT')}`;
-        const filePath = createReadStream(resolve(__dirname, '..', this.configService.get<string>('DOWNLOADS'), fileName));
+        const fileName = `${track.artist} - ${track.song}.${this.configService.get<string>(EnviromentEnum.FORMAT)}`;
+        const filePath = createReadStream(resolve(__dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), fileName));
         res.set({'Content-Disposition': `attachment; filename="${fileName}`});
         return new StreamableFile(filePath);
     }

@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/spooty-fe",
+            "outputPath": "../../dist/frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [

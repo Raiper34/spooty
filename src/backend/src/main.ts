@@ -9,5 +9,5 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
-const folderName = resolve(__dirname, process.env.DOWNLOADS);
+const folderName = resolve(__dirname, process.env.DOWNLOADS_PATH);
 !fs.existsSync(folderName) && fs.mkdirSync(folderName);

@@ -6,7 +6,7 @@
     "start:fe": "npm run start -w frontend",
     "build:be": "npm run build -w backend",
     "build:fe": "npm run build -w frontend",
-    "build": "npm run build:be npm run build:fe",
+    "build": "npm run build:be && npm run build:fe",
     "gen:fe": "npm run gen -w frontend",
     "start": "npm run start:prod -w backend"
   }

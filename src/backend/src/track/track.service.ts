@@ -14,6 +14,7 @@ import {resolve} from "path";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
 import * as ffmpeg from 'fluent-ffmpeg';
+import {EnviromentEnum} from "../enviroment.enum";
 
 @WebSocketGateway()
 @Injectable()
@@ -108,13 +109,13 @@ export class TrackService {
                 .on('error', (err) => reject(err));
             ffmpeg(audio)
                 .outputOptions('-metadata', `title=${track.song}`, '-metadata', `artist=${track.artist}`)
-                .format(this.configService.get<string>('FORMAT'))
+                .format(this.configService.get<string>(EnviromentEnum.FORMAT))
                 .on('error', (err) => reject(err))
                 .pipe(
                     fs.createWriteStream(
                         resolve(
-                            __dirname, '..', this.configService.get<string>('DOWNLOADS'),
-                            `${track.artist} - ${track.song.replace('/', '')}.${this.configService.get<string>('FORMAT')}`
+                            __dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH),
+                            `${track.artist} - ${track.song.replace('/', '')}.${this.configService.get<string>(EnviromentEnum.FORMAT)}`
                         )
                     ).on('finish', () => res()).on('error', (err) => reject(err))
                 );

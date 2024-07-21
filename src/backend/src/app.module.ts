@@ -9,6 +9,7 @@ import {TrackModule} from "./track/track.module";
 import {PlaylistModule} from "./playlist/playlist.module";
 import {PlaylistEntity} from "./playlist/playlist.entity";
 import { resolve } from 'path';
+import {EnviromentEnum} from "./enviroment.enum";
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { resolve } from 'path';
       imports:[ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         type: 'sqlite',
-        database: configService.get<string>('DB'),
+        database: resolve(__dirname, configService.get<string>(EnviromentEnum.DB_PATH)),
         entities: [TrackEntity, PlaylistEntity],
         synchronize: true,
       }),
@@ -27,7 +28,7 @@ import { resolve } from 'path';
     ServeStaticModule.forRootAsync({
       imports:[ConfigModule],
       useFactory: async (configService: ConfigService) => ([{
-        rootPath: resolve(__dirname, configService.get<string>('FE')),
+        rootPath: resolve(__dirname, configService.get<string>(EnviromentEnum.FE_PATH)),
         exclude: ['/api/(.*)'],
       }]),
       inject: [ConfigService]
