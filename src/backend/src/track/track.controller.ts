@@ -28,7 +28,7 @@ export class TrackController {
     async getFile(@Res({ passthrough: true }) res: Response, @Param('id') id: number): Promise<StreamableFile> {
         const track = await this.service.findOne(id);
         const fileName = `${track.artist} - ${track.song}.${this.configService.get<string>(EnviromentEnum.FORMAT)}`;
-        const filePath = createReadStream(resolve(__dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), fileName));
+        const filePath = createReadStream(resolve(__dirname, '..', this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH), track.playlist.name, fileName));
         res.set({'Content-Disposition': `attachment; filename="${fileName}`});
         return new StreamableFile(filePath);
     }

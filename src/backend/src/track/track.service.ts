@@ -37,7 +37,7 @@ export class TrackService {
     }
 
     findOne(id: number): Promise<TrackEntity | null> {
-        return this.repository.findOneBy({ id });
+        return this.repository.findOne({where: {id}, relations: ['playlist']});
     }
 
     async remove(id: number): Promise<void> {
