@@ -2,3 +2,5 @@
 /dist
 /.idea
 **/*.sqlite
+# Local Netlify folder
+.netlify

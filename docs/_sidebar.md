@@ -1,0 +1,5 @@
+- Getting started
+    - [Using Docker](docker.md)
+    - [Build from source](source.md)
+- [Changelog](CHANGELOG.md)
+- [License](LICENSE.md)

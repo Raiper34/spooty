@@ -1,0 +1,27 @@
+{
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
+  },
+  "copyFiles": [
+    {
+      "from": "*",
+      "to": "../dist/docs"
+    },
+    {
+      "from": "../assets",
+      "to": "../dist/docs"
+    },
+    {
+      "from": "../README.md",
+      "to": "../dist/docs/README.md"
+    },
+    {
+      "from": "../LICENSE.md",
+      "to": "../dist/docs/LICENSE.md"
+    },
+    {
+      "from": "../CHANGELOG.md",
+      "to": "../dist/docs/CHANGELOG.md"
+    }
+  ]
+}
