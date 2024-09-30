@@ -3,30 +3,15 @@ import {createStore} from "@ngneat/elf";
 import {deleteEntities, selectManyByPredicate, upsertEntities, withEntities} from "@ngneat/elf-entities";
 import {Socket} from "ngx-socket-io";
 import {map, Observable, tap} from "rxjs";
-import {trackRequestResult} from "@ngneat/elf-requests";
 import {HttpClient} from "@angular/common/http";
+import {Track, TrackStatusEnum} from "../models/track";
 
 const STORE_NAME = 'track';
 const ENDPOINT = '/api/track';
-
-export interface Track {
-  id: number;
-  artist: string;
-  name: string;
-  spotifyUrl: string;
-  youtubeUrl: string;
-  status: TrackStatusEnum;
-  playlistId?: number;
-  error?: string;
-}
-
-export enum TrackStatusEnum {
-  New,
-  Searching,
-  Queued,
-  Downloading,
-  Completed,
-  Error,
+enum WsTrackOperation {
+  New = 'trackNew',
+  Update = 'trackUpdate',
+  Delete = 'trackDelete',
 }
 
 @Injectable({
@@ -58,17 +43,12 @@ export class TrackService {
     private readonly http: HttpClient,
     private readonly socket: Socket,
   ) {
-    this.socket.on('trackUpdate', (track: Track) => this.store.update(upsertEntities(track)));
-    this.socket.on('trackDelete', ({id}: {id: number}) => this.store.update(deleteEntities(id)));
-    this.socket.on('trackNew', ({track, playlistId}: {track: Track, playlistId: number}) =>
-      this.store.update(upsertEntities([{...track, playlistId}]))
-    );
+    this.initWsConnection();
   }
 
   fetch(playlistId: number): void {
     this.http.get<Track[]>(`${ENDPOINT}/playlist/${playlistId}`).pipe(
       tap((data: Track[]) => this.store.update(upsertEntities(data.map(track => ({...track, playlistId}))))),
-      trackRequestResult([STORE_NAME], { skipCache: true }),
     ).subscribe();
   }
 
@@ -78,5 +58,13 @@ export class TrackService {
 
   retry(id: number): void {
     this.http.get(`${ENDPOINT}/retry/${id}`).subscribe();
+  }
+
+  private initWsConnection(): void {
+    this.socket.on(WsTrackOperation.Update, (track: Track) => this.store.update(upsertEntities(track)));
+    this.socket.on(WsTrackOperation.Delete, ({id}: {id: number}) => this.store.update(deleteEntities(id)));
+    this.socket.on(WsTrackOperation.New, ({track, playlistId}: {track: Track, playlistId: number}) =>
+      this.store.update(upsertEntities([{...track, playlistId}]))
+    );
   }
 }

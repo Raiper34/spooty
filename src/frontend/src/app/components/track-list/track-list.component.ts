@@ -1,7 +1,8 @@
 import {Component, Input} from '@angular/core';
 import {CommonModule, NgFor, NgSwitch, NgSwitchCase} from "@angular/common";
-import {Track, TrackService, TrackStatusEnum} from "../../services/track.service";
+import {TrackService} from "../../services/track.service";
 import {Observable} from "rxjs";
+import {Track, TrackStatusEnum} from "../../models/track";
 
 @Component({
   selector: 'app-track-list',

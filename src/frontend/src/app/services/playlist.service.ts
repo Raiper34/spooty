@@ -3,9 +3,7 @@ import {createStore} from "@ngneat/elf";
 import {HttpClient} from "@angular/common/http";
 import {
   deleteEntities,
-  getEntityByPredicate,
   selectAllEntities, selectEntities, selectEntity,
-  selectEntityByPredicate,
   setEntities,
   UIEntitiesRef,
   unionEntities, updateEntities, upsertEntities,
@@ -14,20 +12,17 @@ import {
 } from "@ngneat/elf-entities";
 import {joinRequestResult, trackRequestResult} from "@ngneat/elf-requests";
 import {combineLatest, filter, first, map, Observable, of, switchMap, tap} from "rxjs";
-import {Track, TrackService} from "./track.service";
+import {TrackService} from "./track.service";
 import {Socket} from "ngx-socket-io";
+import {Playlist} from "../models/playlist";
 
 const STORE_NAME = 'playlist';
 const ENDPOINT = '/api/playlist';
 const CREATE_LOADING = 'CREATE_LOADING';
-
-export interface Playlist {
-  id: number;
-  name?: string;
-  spotifyUrl: string;
-  error?: string;
-  active: boolean;
-  createdAt: number;
+enum WsPlaylistOperation {
+  New = 'playlistNew',
+  Update = 'playlistUpdate',
+  Delete = 'playlistDelete',
 }
 
 export interface PlaylistUi {
@@ -53,26 +48,18 @@ export class PlaylistService {
     withEntities<Playlist>(),
     withUIEntities<PlaylistUi>()
   );
+
   all$ = this.store.combine({
     entities: this.store.pipe(selectAllEntities()),
     UIEntities: this.store.pipe(selectEntities({ ref: UIEntitiesRef })),
-  }).pipe(unionEntities(), map(data => data.sort((a, b) => this.sort(a, b))));
-
-  loading$ = this.store.pipe(joinRequestResult([STORE_NAME]));
+  }).pipe(unionEntities(), map(data => data.sort((a, b) => this.groupActiveAndSortByCreation(a, b))));
   createLoading$ = this.store.pipe(joinRequestResult([CREATE_LOADING], { initialStatus: 'idle' }));
 
   constructor(private readonly http: HttpClient,
               private readonly socket: Socket,
               private readonly trackService: TrackService,
   ) {
-    this.socket.on('playlistUpdate', (playlist: Playlist) => this.store.update(upsertEntities(playlist)));
-    this.socket.on('playlistDelete', ({id}: {id: number}) => this.store.update(deleteEntities(Number(id))));
-    this.socket.on('playlistNew', (playlist: Playlist) =>
-      this.store.update(
-        upsertEntities(playlist),
-        upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
-      )
-    );
+    this.initWsConnection();
   }
 
   getById(id: number): Observable<Playlist | undefined> {
@@ -133,7 +120,6 @@ export class PlaylistService {
         setEntities(data.map(item => ({id: item.id, collapsed: false})), {ref: UIEntitiesRef})
       )),
       tap((data: Playlist[]) => data.forEach(playlist => this.trackService.fetch(playlist.id))),
-      trackRequestResult([STORE_NAME], { skipCache: true }),
     ).subscribe();
   }
 
@@ -144,15 +130,11 @@ export class PlaylistService {
   }
 
   toggleCollapsed(id: number): void {
-    this.store.update(updateEntities(id, old => ({...old, collapsed: !old.collapsed}), { ref: UIEntitiesRef }))
+    this.store.update(updateEntities(id, old => ({...old, collapsed: !old.collapsed}), { ref: UIEntitiesRef }));
   }
 
   delete(id: number): void {
     this.delete$(id).subscribe();
-  }
-
-  private delete$(id: number): Observable<void> {
-    return this.http.delete<void>(`${ENDPOINT}/${id}`);
   }
 
   retryFailed(id: number): void {
@@ -163,7 +145,22 @@ export class PlaylistService {
     this.http.put<void>(`${ENDPOINT}/${id}`, {active}).subscribe();
   }
 
-  private sort(a: Playlist & PlaylistUi, b: Playlist & PlaylistUi): number {
+  private delete$(id: number): Observable<void> {
+    return this.http.delete<void>(`${ENDPOINT}/${id}`);
+  }
+
+  private groupActiveAndSortByCreation(a: Playlist & PlaylistUi, b: Playlist & PlaylistUi): number {
     return a.active === b.active ? (b.createdAt - a.createdAt) : (a.active < b.active ? 1 : -1);
+  }
+
+  private initWsConnection(): void {
+    this.socket.on(WsPlaylistOperation.Update, (playlist: Playlist) => this.store.update(upsertEntities(playlist)));
+    this.socket.on(WsPlaylistOperation.Delete, ({id}: {id: number}) => this.store.update(deleteEntities(Number(id))));
+    this.socket.on(WsPlaylistOperation.New, (playlist: Playlist) =>
+      this.store.update(
+        upsertEntities(playlist),
+        upsertEntities({id: playlist.id, collapsed: false}, {ref: UIEntitiesRef})
+      )
+    );
   }
 }
