@@ -1,27 +1,26 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import {TrackEntity} from "../track/track.entity";
+import { TrackEntity } from '../track/track.entity';
 
 @Entity()
 export class PlaylistEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @Column({ nullable: true })
+  name?: string;
 
-    @Column({ nullable: true })
-    name?: string;
+  @Column()
+  spotifyUrl: string;
 
-    @Column()
-    spotifyUrl: string;
+  @Column({ nullable: true })
+  error?: string;
 
-    @Column({ nullable: true })
-    error?: string;
+  @Column({ default: false })
+  active?: boolean;
 
-    @Column({default: false})
-    active?: boolean;
+  @Column({ default: () => Date.now() })
+  createdAt?: number;
 
-    @Column({default: () => Date.now()})
-    createdAt?: number;
-
-    @OneToMany(() => TrackEntity, track => track.playlist)
-    tracks?: TrackEntity[];
+  @OneToMany(() => TrackEntity, (track) => track.playlist)
+  tracks?: TrackEntity[];
 }

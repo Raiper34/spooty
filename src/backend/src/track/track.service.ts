@@ -13,6 +13,7 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import * as ffmpeg from 'fluent-ffmpeg';
 import { EnviromentEnum } from '../enviroment.enum';
+import {UtilsService} from "../shared/utils.service";
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -30,6 +31,7 @@ export class TrackService {
     @InjectRepository(TrackEntity)
     private repository: Repository<TrackEntity>,
     private readonly configService: ConfigService,
+    private readonly utilsService: UtilsService,
   ) {}
 
   findAll(
@@ -153,10 +155,7 @@ export class TrackService {
 
   getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {
     return resolve(
-      __dirname,
-      '..',
-      this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH),
-      playlist.name,
+      this.utilsService.getPlaylistFolderPath(playlist.name),
       this.getTrackFileName(track),
     );
   }
