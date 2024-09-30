@@ -9,6 +9,10 @@
   &:hover .hover-icon {
     display: inline;
   }
+
+  &:hover .hover-icon-reversed {
+    display: none;
+  }
 }
 
 .panel {

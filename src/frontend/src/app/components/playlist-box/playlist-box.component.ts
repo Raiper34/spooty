@@ -46,7 +46,6 @@ export class PlaylistBoxComponent {
 
   constructor(private readonly service: PlaylistService) { }
 
-
   toggleCollapse(playlistId: number): void {
     this.service.toggleCollapsed(playlistId);
   }
@@ -59,7 +58,7 @@ export class PlaylistBoxComponent {
     this.service.retryFailed(id);
   }
 
-  setActive(id: number, currentActive: boolean = false): void {
+  toggleActive(id: number, currentActive: boolean): void {
     this.service.setActive(id, !currentActive)
   }
 }
