@@ -137,7 +137,7 @@ export class TrackService {
         filter: 'audioonly',
       }).on('error', (err) => reject(err));
       ffmpeg(audio)
-        .outputOptions(ffmpegOptions)
+        .outputOptions(...ffmpegOptions)
         .format(this.configService.get<string>(EnvironmentEnum.FORMAT))
         .on('error', (err) => reject(err))
         .pipe(
