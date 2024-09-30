@@ -15,7 +15,7 @@
     "start": "npm run start:prod -w backend",
     "docs": "docsify serve ./docs",
     "deploy:docs": "npm run build:docs && netlify deploy --dir=dist/docs --prod",
-    "release": "npm run build && docker build -t raiper34/spooty:0.0.0 . && docker push raiper34/spooty:0.0.0"
+    "release": "npm run build && docker build -t raiper34/spooty:1.0.0 -t raiper34/spooty:latest . && docker push raiper34/spooty:1.0.0 && docker push raiper34/spooty:latest"
   },
   "devDependencies": {
     "copy-files-from-to": "^3.2.2",

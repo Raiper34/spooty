@@ -14,7 +14,7 @@ The project is based on NestJS and Angular.
 # 🚀 Instalation
 Recommended and the easiest way how to start to use of Spooty is using docker.
 ```shell
-docker run -d -p 3000:3000 -v /path/to/downloads:/spooty/dist/backend/downloads spooty
+docker run -d -p 3000:3000 -v /path/to/downloads:/spooty/backend/downloads spooty
 ```
 
 # 📚 Documentation
