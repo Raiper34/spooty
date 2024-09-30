@@ -12,7 +12,7 @@ const ENDPOINT = '/api/track';
 export interface Track {
   id: number;
   artist: string;
-  song: string;
+  name: string;
   spotifyUrl: string;
   youtubeUrl: string;
   status: TrackStatusEnum;

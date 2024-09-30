@@ -5,12 +5,12 @@ import {PlaylistEntity} from "./playlist.entity";
 import {TrackService} from "../track/track.service";
 import {WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {Server} from "socket.io";
-import {TrackStatusEnum} from "../track/track.model";
 import {resolve} from "path";
 import {ConfigService} from "@nestjs/config";
 import {EnviromentEnum} from "../enviroment.enum";
 import * as fs from 'fs';
 import {Interval} from "@nestjs/schedule";
+import {TrackStatusEnum} from "../track/track.entity";
 const fetch = require('isomorphic-unfetch');
 const { getData, getPreview, getTracks, getDetails } = require('spotify-url-info')(fetch);
 
@@ -54,7 +54,7 @@ export class PlaylistService {
         for(let track of details?.tracks ?? []) {
             await this.trackService.create({
                 artist: track.artist,
-                song: track.name,
+                name: track.name,
                 spotifyUrl: track.previewUrl,
             }, savedPlaylist);
         }
@@ -100,7 +100,7 @@ export class PlaylistService {
             for(let track of details?.tracks ?? []) {
                 const track2Save = {
                     artist: track.artist,
-                    song: track.name,
+                    name: track.name,
                     spotifyUrl: track.previewUrl,
                 }
                 const isExist = !!(await this.trackService.findAll({...track2Save, playlist: {id: playlist.id}})).length;
