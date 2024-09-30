@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { resolve } from 'path';
-import { EnviromentEnum } from '../enviroment.enum';
+import { EnvironmentEnum } from '../environmentEnum';
 
 @Injectable()
 export class UtilsService {
@@ -11,7 +11,7 @@ export class UtilsService {
     return resolve(
       __dirname,
       '..',
-      this.configService.get<string>(EnviromentEnum.DOWNLOADS_PATH),
+      this.configService.get<string>(EnvironmentEnum.DOWNLOADS_PATH),
       name,
     );
   }

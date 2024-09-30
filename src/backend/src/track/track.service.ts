@@ -12,8 +12,8 @@ import { resolve } from 'path';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import * as ffmpeg from 'fluent-ffmpeg';
-import { EnviromentEnum } from '../enviroment.enum';
-import {UtilsService} from "../shared/utils.service";
+import { EnvironmentEnum } from '../environmentEnum';
+import { UtilsService } from '../shared/utils.service';
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -138,7 +138,7 @@ export class TrackService {
       }).on('error', (err) => reject(err));
       ffmpeg(audio)
         .outputOptions(ffmpegOptions)
-        .format(this.configService.get<string>(EnviromentEnum.FORMAT))
+        .format(this.configService.get<string>(EnvironmentEnum.FORMAT))
         .on('error', (err) => reject(err))
         .pipe(
           fs
@@ -150,7 +150,7 @@ export class TrackService {
   }
 
   getTrackFileName(track: TrackEntity): string {
-    return `${track.artist} - ${track.name.replace('/', '')}.${this.configService.get<string>(EnviromentEnum.FORMAT)}`;
+    return `${track.artist} - ${track.name.replace('/', '')}.${this.configService.get<string>(EnvironmentEnum.FORMAT)}`;
   }
 
   getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {
