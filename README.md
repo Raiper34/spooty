@@ -1,3 +1,11 @@
+[![npm version](https://img.shields.io/docker/pulls/raiper34/spooty)](https://hub.docker.com/repository/docker/raiper34/spooty/general)
+[![npm version](https://img.shields.io/docker/image-size/raiper34/spooty)](https://hub.docker.com/repository/docker/raiper34/spooty/general)
+[![npm version](https://img.shields.io/docker/stars/raiper34/spooty)](https://hub.docker.com/repository/docker/raiper34/spooty/general)
+[![docs](https://badgen.net/badge/docs/online/orange)](https://spooty.netlify.app)
+[![GitHub License](https://img.shields.io/github/license/raiper34/spooty)](https://github.com/Raiper34/spooty)
+[![GitHub Repo stars](https://img.shields.io/github/stars/raiper34/spooty)](https://github.com/Raiper34/spooty)
+
+
 # Spooty - selfhosted Spotify downloader
 Spooty is a self-hosted Spotify downloader.
 It allows download track/playlist/album from the spotify url.

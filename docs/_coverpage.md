@@ -1,3 +1,5 @@
+![logo](assets/logo.png)
+
 # Spooty
 
 > A self-hosted Spotify downloader
