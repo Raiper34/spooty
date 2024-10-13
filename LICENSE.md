@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Filip Gulan
+Copyright (c) 2024 Filip Gulan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
