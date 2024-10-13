@@ -1,4 +1,4 @@
-![logo](assets/logo.png)
+![logo](assets/logo.svg)
 
 # Spooty
 
