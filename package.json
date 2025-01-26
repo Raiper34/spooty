@@ -1,4 +1,5 @@
 {
+  "version": "2.0.0",
   "name": "spooty",
   "workspaces": [
     "src/backend",
@@ -16,15 +17,21 @@
     "start": "npm run start:prod -w backend",
     "docs": "docsify serve ./docs",
     "deploy:docs": "npm run build:docs && netlify deploy --dir=dist/docs --prod",
-    "release": "rimraf dist && npm run build && docker build -t raiper34/spooty:1.0.0 -t raiper34/spooty:latest . && docker push raiper34/spooty:1.0.0 && docker push raiper34/spooty:latest",
+    "clean": "rimraf dist",
+    "changelog": "auto-changelog -p",
+    "release": "release-it",
     "commit": "cz"
   },
   "devDependencies": {
+    "@release-it/bumper": "^7.0.1",
+    "auto-changelog": "^2.5.0",
     "commitizen": "^4.3.1",
     "copy-files-from-to": "^3.2.2",
     "cz-conventional-changelog": "^3.3.0",
     "docsify-cli": "^4.4.4",
     "netlify-cli": "^10.5.1",
+    "release-it": "^18.1.2",
+    "release-it-docker-plugin": "^0.0.6",
     "rimraf": "^6.0.1"
   },
   "config": {
