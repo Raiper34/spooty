@@ -1,0 +1,27 @@
+{
+  "$schema": "https://unpkg.com/release-it@17/schema/release-it.json",
+  "git": {
+    "commitMessage": "chore(release): v${version}",
+    "changelog": "npm run changelog -- --stdout --commit-limit false -u --template https://raw.githubusercontent.com/release-it/release-it/main/templates/changelog-compact.hbs"
+  },
+  "github": {
+    "release": true
+  },
+  "plugins": {
+    "@release-it/bumper": {
+      "in": "package.json",
+      "out": ["src/backend/package.json", "src/frontend/package.json"]
+    },
+    "release-it-docker-plugin": {
+      "build": true,
+      "push": true,
+      "latestTag": true,
+      "imageName": "raiper34/spooty"
+    }
+  },
+  "hooks": {
+    "before:init": ["npm run clean"],
+    "after:bump": ["npm run changelog", "npm run build"],
+    "after:release": ["npm run deploy:docs"]
+  }
+}

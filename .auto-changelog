@@ -1,0 +1,6 @@
+{
+    "ignoreCommitPattern": "(test\\()|(release\\()|(chore\\()",
+    "commitLimit": false,
+    "hideCredit": true,
+    "startingVersion": "2.0.0"
+}
