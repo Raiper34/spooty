@@ -7,6 +7,9 @@
   "github": {
     "release": true
   },
+  "npm": {
+    "publish": false
+  },
   "plugins": {
     "@release-it/bumper": {
       "in": "package.json",
