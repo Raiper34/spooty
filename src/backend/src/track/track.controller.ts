@@ -29,7 +29,7 @@ export class TrackController {
     @Res({ passthrough: true }) res: Response,
     @Param('id') id: number,
   ): Promise<StreamableFile> {
-    const track = await this.service.findOne(id);
+    const track = await this.service.get(id);
     const fileName = this.service.getTrackFileName(track);
     const readStream = createReadStream(
       this.service.getFolderName(track, track.playlist),

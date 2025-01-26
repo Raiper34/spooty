@@ -14,17 +14,16 @@ const STATUS2CLASS = {
 }
 
 @Component({
-  selector: 'app-playlist-box',
-  standalone: true,
-  imports: [
-    CommonModule,
-    AsyncPipe,
-    NgForOf,
-    NgIf,
-    TrackListComponent
-  ],
-  templateUrl: './playlist-box.component.html',
-  styleUrl: './playlist-box.component.scss'
+    selector: 'app-playlist-box',
+    imports: [
+        CommonModule,
+        AsyncPipe,
+        NgIf,
+        TrackListComponent
+    ],
+    templateUrl: './playlist-box.component.html',
+    styleUrl: './playlist-box.component.scss',
+  standalone: true
 })
 export class PlaylistBoxComponent {
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlaylistEntity } from './playlist.entity';
@@ -9,8 +9,7 @@ import * as fs from 'fs';
 import { Interval } from '@nestjs/schedule';
 import { TrackStatusEnum } from '../track/track.entity';
 import { UtilsService } from '../shared/utils.service';
-const fetch = require('isomorphic-unfetch');
-const { getDetails } = require('spotify-url-info')(fetch);
+import { SpotifyService } from '../shared/spotify.service';
 
 enum WsPlaylistOperation {
   New = 'playlistNew',
@@ -22,12 +21,14 @@ enum WsPlaylistOperation {
 @Injectable()
 export class PlaylistService {
   @WebSocketServer() io: Server;
+  private readonly logger = new Logger(TrackService.name);
 
   constructor(
     @InjectRepository(PlaylistEntity)
     private repository: Repository<PlaylistEntity>,
     private readonly trackService: TrackService,
     private readonly utilsService: UtilsService,
+    private readonly spotifyService: SpotifyService,
   ) {}
 
   findAll(
@@ -47,17 +48,17 @@ export class PlaylistService {
   }
 
   async create(playlist: PlaylistEntity): Promise<void> {
-    let details;
+    let detail;
     let playlist2Save: PlaylistEntity;
     try {
-      details = await getDetails(playlist.spotifyUrl);
-      playlist2Save = { ...playlist, name: details.preview.title };
+      detail = await this.spotifyService.getPlaylistDetail(playlist.spotifyUrl);
+      playlist2Save = { ...playlist, name: detail.name };
+      this.createPlaylistFolderStructure(playlist2Save.name);
     } catch (err) {
       playlist2Save = { ...playlist, error: String(err) };
     }
     const savedPlaylist = await this.save(playlist2Save);
-    this.createPlaylistFolderStructure(savedPlaylist.name);
-    for (const track of details?.tracks ?? []) {
+    for (const track of detail.tracks ?? []) {
       await this.trackService.create(
         {
           artist: track.artist,
@@ -99,21 +100,21 @@ export class PlaylistService {
   async checkActivePlaylists(): Promise<void> {
     const activePlaylists = await this.findAll({}, { active: true });
     for (const playlist of activePlaylists) {
-      let details;
+      let tracks = [];
       try {
-        details = await getDetails(playlist.spotifyUrl);
+        tracks = await this.spotifyService.getPlaylistTracks(playlist.spotifyUrl);
+        this.createPlaylistFolderStructure(playlist.name);
       } catch (err) {
         await this.update(playlist.id, { ...playlist, error: String(err) });
       }
-      this.createPlaylistFolderStructure(playlist.name);
-      for (const track of details?.tracks ?? []) {
+      for (const track of tracks ?? []) {
         const track2Save = {
           artist: track.artist,
           name: track.name,
           spotifyUrl: track.previewUrl,
         };
         const isExist = !!(
-          await this.trackService.findAll({
+          await this.trackService.getAll({
             ...track2Save,
             playlist: { id: playlist.id },
           })

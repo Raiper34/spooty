@@ -10,6 +10,7 @@ import { PlaylistModule } from './playlist/playlist.module';
 import { PlaylistEntity } from './playlist/playlist.entity';
 import { resolve } from 'path';
 import { EnvironmentEnum } from './environmentEnum';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -39,6 +40,19 @@ import { EnvironmentEnum } from './environmentEnum';
           exclude: ['/api/(.*)'],
         },
       ],
+      inject: [ConfigService],
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        defaultJobOptions: {
+          removeOnComplete: true,
+        },
+        connection: {
+          host: configService.get<string>(EnvironmentEnum.REDIS_HOST),
+          port: configService.get<number>(EnvironmentEnum.REDIS_PORT),
+        },
+      }),
       inject: [ConfigService],
     }),
     TrackModule,

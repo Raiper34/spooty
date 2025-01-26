@@ -5,11 +5,11 @@ import {Observable} from "rxjs";
 import {Track, TrackStatusEnum} from "../../models/track";
 
 @Component({
-  selector: 'app-track-list',
+    selector: 'app-track-list',
+    imports: [CommonModule, NgFor, NgSwitch, NgSwitchCase],
+    templateUrl: './track-list.component.html',
+    styleUrl: './track-list.component.scss',
   standalone: true,
-  imports: [CommonModule, NgFor, NgSwitch, NgSwitchCase],
-  templateUrl: './track-list.component.html',
-  styleUrl: './track-list.component.scss'
 })
 export class TrackListComponent {
 

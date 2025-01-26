@@ -22,6 +22,5 @@ services:
 ```
 
 ### Environment variables
-Name | Default | Description                                                                                                                                                       |
---- |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-FORMAT | `mp3`   |  Format of downloaded files (currently fully supported only `mp3` but you can try whatever you want from [ffmpeg](https://ffmpeg.org/ffmpeg-formats.html#Muxers)) |
+
+For detailed configuration, see available [Environment variables](variables.md).
