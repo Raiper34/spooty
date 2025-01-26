@@ -1,16 +1,15 @@
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
 import {CommonModule, NgFor} from "@angular/common";
 import {PlaylistService, PlaylistStatusEnum} from "./services/playlist.service";
 import {PlaylistBoxComponent} from "./components/playlist-box/playlist-box.component";
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, FormsModule, NgFor, PlaylistBoxComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+    selector: 'app-root',
+    imports: [CommonModule, FormsModule, NgFor, PlaylistBoxComponent],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss',
+    standalone: true,
 })
 export class AppComponent {
 

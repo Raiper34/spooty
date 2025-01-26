@@ -3,4 +3,7 @@ export enum EnvironmentEnum {
   FE_PATH = 'FE_PATH',
   DOWNLOADS_PATH = 'DOWNLOADS_PATH',
   FORMAT = 'FORMAT',
+  REDIS_PORT = 'REDIS_PORT',
+  REDIS_HOST = 'REDIS_HOST',
+  REDIS_RUN = 'REDIS_RUN',
 }

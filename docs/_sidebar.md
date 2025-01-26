@@ -1,5 +1,6 @@
 - Getting started
     - [Using Docker](docker.md)
     - [Build from source](source.md)
+    - [Environment variables](variables.md)
 - [Changelog](CHANGELOG.md)
 - [License](LICENSE.md)

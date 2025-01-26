@@ -3,17 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TrackEntity, TrackStatusEnum } from './track.entity';
 import { PlaylistEntity } from '../playlist/playlist.entity';
-import { Interval } from '@nestjs/schedule';
-import * as yts from 'yt-search';
-import * as ytdl from '@distube/ytdl-core';
-import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { resolve } from 'path';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import * as ffmpeg from 'fluent-ffmpeg';
 import { EnvironmentEnum } from '../environmentEnum';
 import { UtilsService } from '../shared/utils.service';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
+import { YoutubeService } from '../shared/youtube.service';
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -30,11 +28,14 @@ export class TrackService {
   constructor(
     @InjectRepository(TrackEntity)
     private repository: Repository<TrackEntity>,
+    @InjectQueue('track-download-processor') private trackDownloadQueue: Queue,
+    @InjectQueue('track-search-processor') private trackSearchQueue: Queue,
     private readonly configService: ConfigService,
     private readonly utilsService: UtilsService,
+    private readonly youtubeService: YoutubeService,
   ) {}
 
-  findAll(
+  getAll(
     where?: { [key: string]: any },
     relations: Record<string, boolean> = {},
   ): Promise<TrackEntity[]> {
@@ -45,7 +46,7 @@ export class TrackService {
     return this.repository.find({ where: { playlist: { id } } });
   }
 
-  findOne(id: number): Promise<TrackEntity | null> {
+  get(id: number): Promise<TrackEntity | null> {
     return this.repository.findOne({ where: { id }, relations: ['playlist'] });
   }
 
@@ -56,6 +57,9 @@ export class TrackService {
 
   async create(track: TrackEntity, playlist?: PlaylistEntity): Promise<void> {
     const savedTrack = await this.repository.save({ ...track, playlist });
+    await this.trackSearchQueue.add('', savedTrack, {
+      jobId: `id-${savedTrack.id}`,
+    });
     this.io.emit(WsTrackOperation.New, {
       track: savedTrack,
       playlistId: playlist.id,
@@ -68,85 +72,62 @@ export class TrackService {
   }
 
   async retry(id: number): Promise<void> {
-    const track = await this.findOne(id);
+    const track = await this.get(id);
+    await this.trackSearchQueue.add('', track, { jobId: `id-${id}` });
     await this.update(id, { ...track, status: TrackStatusEnum.New });
   }
 
-  @Interval(1_000)
-  async findOnYoutube(): Promise<void> {
-    const newTracks = await this.findAll({ status: TrackStatusEnum.New });
-    await this.changeTracksStatuses(newTracks, TrackStatusEnum.Searching);
-    for (const track of newTracks) {
-      let updatedTrack: TrackEntity;
-      try {
-        const youtubeResult = await yts(`${track.artist} - ${track.name}`);
-        updatedTrack = {
-          ...track,
-          youtubeUrl: youtubeResult.videos[0].url,
-          status: TrackStatusEnum.Queued,
-        };
-      } catch (err) {
-        this.logger.error(err);
-        updatedTrack = {
-          ...track,
-          error: String(err),
-          status: TrackStatusEnum.Error,
-        };
-      }
-      await this.update(track.id, updatedTrack);
+  async findOnYoutube(track: TrackEntity): Promise<void> {
+    if (!(await this.get(track.id))) {
+      return;
     }
-  }
-
-  @Interval(1_000)
-  async downloadFromYoutube(): Promise<void> {
-    const queuedTracks = await this.findAll(
-      { status: TrackStatusEnum.Queued },
-      { playlist: true },
-    );
-    await this.changeTracksStatuses(queuedTracks, TrackStatusEnum.Downloading);
-    for (const track of queuedTracks) {
-      let error: string;
-      try {
-        await this.downloadAndFormat(track, track.playlist);
-      } catch (err) {
-        this.logger.error(err);
-        error = String(err);
-      }
-      const updatedTrack = {
-        ...track,
-        status: error ? TrackStatusEnum.Error : TrackStatusEnum.Completed,
-        ...(error ? { error } : {}),
-      };
-      await this.update(track.id, updatedTrack);
-    }
-  }
-
-  private downloadAndFormat(
-    track: TrackEntity,
-    playlist: PlaylistEntity,
-  ): Promise<void> {
-    const ffmpegOptions = [
-      '-metadata',
-      `title=${track.name}`,
-      '-metadata',
-      `artist=${track.artist}`,
-    ];
-    return new Promise((res, reject) => {
-      const audio = ytdl(track.youtubeUrl, {
-        quality: 'highestaudio',
-        filter: 'audioonly',
-      }).on('error', (err) => reject(err));
-      ffmpeg(audio)
-        .outputOptions(...ffmpegOptions)
-        .format(this.configService.get<string>(EnvironmentEnum.FORMAT))
-        .on('error', (err) => reject(err))
-        .pipe(
-          fs
-            .createWriteStream(this.getFolderName(track, playlist))
-            .on('finish', () => res())
-            .on('error', (err) => reject(err)),
-        );
+    await this.update(track.id, {
+      ...track,
+      status: TrackStatusEnum.Searching,
     });
+    let updatedTrack: TrackEntity;
+    try {
+      const youtubeUrl = await this.youtubeService.findOnYoutubeOne(
+        track.artist,
+        track.name,
+      );
+      updatedTrack = { ...track, youtubeUrl, status: TrackStatusEnum.Queued };
+    } catch (err) {
+      this.logger.error(err);
+      updatedTrack = {
+        ...track,
+        error: String(err),
+        status: TrackStatusEnum.Error,
+      };
+    }
+    await this.trackDownloadQueue.add('', updatedTrack, {
+      jobId: `id-${updatedTrack.id}`,
+    });
+    await this.update(track.id, updatedTrack);
+  }
+
+  async downloadFromYoutube(track: TrackEntity): Promise<void> {
+    if (!(await this.get(track.id))) {
+      return;
+    }
+    await this.update(track.id, {
+      ...track,
+      status: TrackStatusEnum.Downloading,
+    });
+    let error: string;
+    try {
+      const folderName = this.getFolderName(track, track.playlist);
+      await this.youtubeService.downloadAndFormat(track, folderName);
+    } catch (err) {
+      this.logger.error(err);
+      error = String(err);
+    }
+    const updatedTrack = {
+      ...track,
+      status: error ? TrackStatusEnum.Error : TrackStatusEnum.Completed,
+      ...(error ? { error } : {}),
+    };
+    await this.update(track.id, updatedTrack);
   }
 
   getTrackFileName(track: TrackEntity): string {
@@ -158,14 +139,5 @@ export class TrackService {
       this.utilsService.getPlaylistFolderPath(playlist.name),
       this.getTrackFileName(track),
     );
-  }
-
-  private async changeTracksStatuses(
-    tracks: TrackEntity[],
-    status: TrackStatusEnum,
-  ): Promise<void> {
-    for (const track of tracks) {
-      await this.update(track.id, { ...track, status });
-    }
   }
 }

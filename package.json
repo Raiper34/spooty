@@ -12,10 +12,11 @@
     "build:docs": "copy-files-from-to --config docs/copy-files-from-to.json",
     "build": "npm run build:be && npm run build:fe",
     "gen:fe": "npm run gen -w frontend",
+    "gen:be": "npm run gen -w backend",
     "start": "npm run start:prod -w backend",
     "docs": "docsify serve ./docs",
     "deploy:docs": "npm run build:docs && netlify deploy --dir=dist/docs --prod",
-    "release": "npm run build && docker build -t raiper34/spooty:1.0.0 -t raiper34/spooty:latest . && docker push raiper34/spooty:1.0.0 && docker push raiper34/spooty:latest",
+    "release": "rimraf dist && npm run build && docker build -t raiper34/spooty:1.0.0 -t raiper34/spooty:latest . && docker push raiper34/spooty:1.0.0 && docker push raiper34/spooty:latest",
     "commit": "cz"
   },
   "devDependencies": {
@@ -23,7 +24,8 @@
     "copy-files-from-to": "^3.2.2",
     "cz-conventional-changelog": "^3.3.0",
     "docsify-cli": "^4.4.4",
-    "netlify-cli": "^10.5.1"
+    "netlify-cli": "^10.5.1",
+    "rimraf": "^6.0.1"
   },
   "config": {
     "commitizen": {
