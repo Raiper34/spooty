@@ -18,13 +18,18 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '18.x'
-      - name: Update @distube/ytdl-core
-        run: npm update @distube/ytdl-core -w backend
-      - name: Commit and create PR
-        uses: peter-evans/create-pull-request@v3
-        with:
-            title: 'build(ytdl): Upgrade ytdl package (automated)'
-            branch: 'ytdl-update-automated'
-            commit-message: 'build(ytdl): Upgrade ytdl package (automated)'
-            token: ${{ secrets.AUTOUPDATE_PAT }}
+      - name: Update @distube/ytdl-core and release
+        run: |
+          npm update @distube/ytdl-core -w backend
+          if git diff --exit-code; then
+            echo "NO changes detected"
+          else
+            git config --global user.email "updater@spooty"
+            git config --global user.name "AutoUpdater"
+            git add .
+            git commit -m "fix(ytdl): Upgrade ytdl package (automated)"
+            npm run release -- --cli
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTOUPDATE_PAT }}
 
