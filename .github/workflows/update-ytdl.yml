@@ -2,7 +2,7 @@ name: update-ytdl
 
 on:
   workflow_dispatch:
-    branches: ytdl-update-automated
+    branches: main
   schedule:
     - cron: '0 0 * * *'
 
@@ -24,7 +24,3 @@ jobs:
             title: 'build(ytdl): Upgrade ytdl package (automated)'
             branch: 'ytdl-update-automated'
             commit-message: 'build(ytdl): Upgrade ytdl package (automated)'
-      - name: Merge ytdl-update-automated PR
-        run: gh pr merge --merge --auto "1"
-        env:
-          GH_TOKEN: ${{ github.token }}
