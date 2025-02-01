@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.AUTOUPDATE_PAT }}
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
@@ -24,3 +26,5 @@ jobs:
             title: 'build(ytdl): Upgrade ytdl package (automated)'
             branch: 'ytdl-update-automated'
             commit-message: 'build(ytdl): Upgrade ytdl package (automated)'
+            token: ${{ secrets.AUTOUPDATE_PAT }}
+

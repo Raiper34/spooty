@@ -1,7 +1,5 @@
 name: Auto-merge Github Actions
-on:
-  repository_dispatch:
-    types: [ create-pull-request ]
+on: pull_request
 
 permissions:
   pull-requests: write
