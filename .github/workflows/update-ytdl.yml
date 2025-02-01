@@ -1,0 +1,32 @@
+name: update-ytdl
+
+on:
+  workflow_dispatch:
+    branches: main
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  update-ytdl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.x'
+      - name: Update @distube/ytdl-core
+        run: npm update @distube/ytdl-core -w backend
+      - name: Commit and create PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+            title: 'build(ytdl): Upgrade ytdl package (automated)'
+            branch: 'ytdl-update-automated'
+            commit-message: 'build(ytdl): Upgrade ytdl package (automated)'
+  auto-merge:
+    if: startsWith(github.head_ref, 'ytdl-update-automated')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge ytdl-update-automated PR
+        run: gh pr merge --merge --auto "1"
