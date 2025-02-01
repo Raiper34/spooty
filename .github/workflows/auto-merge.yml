@@ -1,0 +1,17 @@
+name: Auto-merge Github Actions
+on:
+  repository_dispatch:
+    types: [ create-pull-request ]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'github-actions'
+    steps:
+      - uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          pull-request-number: ${{ github.event.pull_request.number }}
