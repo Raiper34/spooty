@@ -2,7 +2,7 @@ name: update-ytdl
 
 on:
   workflow_dispatch:
-    branches: ytdl-update-automated
+    branches: main
   schedule:
     - cron: '0 0 * * *'
 
