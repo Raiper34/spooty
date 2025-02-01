@@ -1,0 +1,13 @@
+name: auto-merge
+
+on:
+  pull_request:
+    types:
+      - opened
+jobs:
+  auto-merge:
+    if: startsWith(github.head_ref, 'ytdl-update-automated')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge ytdl-update-automated PR
+        run: gh pr merge --merge --auto "1"
