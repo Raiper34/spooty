@@ -8,7 +8,7 @@ permissions:
 jobs:
   automerge:
     runs-on: ubuntu-latest
-    if: github.ref_name == 'ytdl-update-automated'
+    if: github.event.pull_request.head.ref == 'ytdl-update-automated'
     steps:
       - uses: peter-evans/enable-pull-request-automerge@v3
         with:
