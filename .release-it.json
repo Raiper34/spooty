@@ -19,7 +19,10 @@
       "build": true,
       "push": true,
       "latestTag": true,
-      "imageName": "raiper34/spooty"
+      "imageName": "raiper34/spooty",
+      "buildx": true,
+      "builder": "container",
+      "platform": "linux/arm64,linux/amd64"
     }
   },
   "hooks": {
