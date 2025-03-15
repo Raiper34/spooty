@@ -21,7 +21,7 @@
     "gen": "nest generate"
   },
   "dependencies": {
-    "@distube/ytdl-core": "^4.15.1",
+    "@distube/ytdl-core": "^4.16.4",
     "@nestjs/bullmq": "^10.2.3",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
