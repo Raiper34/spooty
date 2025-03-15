@@ -20,7 +20,8 @@
     "clean": "rimraf dist",
     "changelog": "auto-changelog -p",
     "release": "release-it",
-    "commit": "cz"
+    "commit": "cz",
+    "check:lib": "npm-check-updates -w backend -f @distube/ytdl-core -u"
   },
   "devDependencies": {
     "@release-it/bumper": "^7.0.1",
@@ -30,6 +31,7 @@
     "cz-conventional-changelog": "^3.3.0",
     "docsify-cli": "^4.4.4",
     "netlify-cli": "^10.5.1",
+    "npm-check-updates": "^17.1.15",
     "release-it": "^18.1.2",
     "release-it-docker-plugin": "^1.0.0",
     "rimraf": "^6.0.1"

@@ -24,7 +24,8 @@ jobs:
         run: docker buildx create --name container --driver=docker-container
       - name: Update @distube/ytdl-core and release
         run: |
-          npm update @distube/ytdl-core -w backend
+          npm ci --only=dev
+          npm run check:lib
           if git diff --exit-code; then
             echo "NO changes detected"
           else
@@ -32,7 +33,6 @@ jobs:
             git config --global user.name "AutoUpdater"
             git add .
             git commit -m "fix(ytdl): Upgrade ytdl package (automated)"
-            npm ci --only=dev
             npm run release -- --cli
           fi
         env:
