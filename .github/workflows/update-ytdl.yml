@@ -28,6 +28,7 @@ jobs:
             git config --global user.name "AutoUpdater"
             git add .
             git commit -m "fix(ytdl): Upgrade ytdl package (automated)"
+            npm ci --only=dev
             npm run release -- --cli
           fi
         env:
