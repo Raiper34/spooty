@@ -24,6 +24,7 @@ jobs:
         run: docker buildx create --name container --driver=docker-container
       - name: Update @distube/ytdl-core and release
         run: |
+          docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
           npm ci --only=dev
           npm run check:lib
           if git diff --exit-code; then
