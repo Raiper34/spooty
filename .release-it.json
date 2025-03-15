@@ -16,13 +16,12 @@
       "out": ["src/backend/package.json", "src/frontend/package.json"]
     },
     "release-it-docker-plugin": {
-      "build": true,
-      "push": true,
       "latestTag": true,
       "imageName": "raiper34/spooty",
       "buildx": true,
       "builder": "container",
-      "platform": "linux/arm64,linux/amd64"
+      "platform": "linux/arm64,linux/amd64",
+      "output": "registry"
     }
   },
   "hooks": {
