@@ -30,6 +30,7 @@ jobs:
           if git diff --exit-code; then
             echo "NO changes detected"
           else
+            npm update @distube/ytdl-core -w backend
             git config --global user.email "updater@spooty"
             git config --global user.name "AutoUpdater"
             git add .
