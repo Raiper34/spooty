@@ -131,7 +131,8 @@ export class TrackService {
   }
 
   getTrackFileName(track: TrackEntity): string {
-    return `${track.artist} - ${track.name.replace('/', '')}.${this.configService.get<string>(EnvironmentEnum.FORMAT)}`;
+    const fileName = `${track.artist} - ${track.name.replace('/', '')}`;
+    return `${this.utilsService.stripFileIllegalChars(fileName)}.${this.configService.get<string>(EnvironmentEnum.FORMAT)}`;
   }
 
   getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {

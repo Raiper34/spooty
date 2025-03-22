@@ -12,7 +12,11 @@ export class UtilsService {
       __dirname,
       '..',
       this.configService.get<string>(EnvironmentEnum.DOWNLOADS_PATH),
-      name,
+      this.stripFileIllegalChars(name),
     );
+  }
+
+  stripFileIllegalChars(text: string): string {
+    return text.replace(/[/\\?%*:|"<>]/g, '-');
   }
 }
