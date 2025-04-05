@@ -10,13 +10,10 @@
     "start:fe": "npm run start -w frontend",
     "build:be": "npm run build -w backend",
     "build:fe": "npm run build -w frontend",
-    "build:docs": "copy-files-from-to --config docs/copy-files-from-to.json",
     "build": "npm run build:be && npm run build:fe",
     "gen:fe": "npm run gen -w frontend",
     "gen:be": "npm run gen -w backend",
     "start": "npm run start:prod -w backend",
-    "docs": "docsify serve ./docs",
-    "deploy:docs": "npm run build:docs && netlify deploy --dir=dist/docs --prod",
     "clean": "rimraf dist",
     "changelog": "auto-changelog -p",
     "release": "release-it",
@@ -29,15 +26,9 @@
     "commitizen": "^4.3.1",
     "copy-files-from-to": "^3.2.2",
     "cz-conventional-changelog": "^3.3.0",
-    "docsify-cli": "^4.4.4",
     "npm-check-updates": "^17.1.15",
     "release-it": "^18.1.2",
     "release-it-docker-plugin": "^2.0.0",
     "rimraf": "^6.0.1"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
   }
 }

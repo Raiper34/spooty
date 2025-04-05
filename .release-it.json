@@ -27,6 +27,6 @@
   "hooks": {
     "before:init": ["npm run clean"],
     "after:bump": ["npm run changelog", "npm run build"],
-    "after:release": ["npm run deploy:docs"]
+    "after:release": []
   }
 }
