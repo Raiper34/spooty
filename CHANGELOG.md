@@ -2,10 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.0.7](https://github.com/Raiper34/spooty/compare/2.0.6...2.0.7)
+
+- fix(ytdl): Upgrade ytdl package (automated) [`9653db5`](https://github.com/Raiper34/spooty/commit/9653db54ea48e93526f2124b11b8012d987b7bcc)
+
 #### [2.0.6](https://github.com/Raiper34/spooty/compare/2.0.5...2.0.6)
 
-- feat(names): strip special characters from file and folder names [`6f39c1e`](https://github.com/Raiper34/spooty/commit/6f39c1e5dc4b8f87917a18d2a23cec6b5cd9ca60)
-- fix(ytdl): Upgrade ytdl package (automated) [`5f30f31`](https://github.com/Raiper34/spooty/commit/5f30f3116f34ceb48d00e3abd5c606e8f9b7caba)
+> 1 April 2025
 
 #### [2.0.5](https://github.com/Raiper34/spooty/compare/2.0.4...2.0.5)
 
