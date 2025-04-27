@@ -2,13 +2,25 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.0.8](https://github.com/Raiper34/spooty/compare/2.0.7...2.0.8)
+
+- docs(readme): remove docs, netlify and docsify, keep only readme docs for now [`bc9482c`](https://github.com/Raiper34/spooty/commit/bc9482c6cb9a47aa0d96fa34866546ec552d1e3c)
+- fix(ytdl): Upgrade ytdl package (automated) [`17b875e`](https://github.com/Raiper34/spooty/commit/17b875e2825cb739767565be5d86aba3a48a9208)
+
 #### [2.0.7](https://github.com/Raiper34/spooty/compare/2.0.6...2.0.7)
+
+> 5 April 2025
 
 - fix(ytdl): Upgrade ytdl package (automated) [`9653db5`](https://github.com/Raiper34/spooty/commit/9653db54ea48e93526f2124b11b8012d987b7bcc)
 
 #### [2.0.6](https://github.com/Raiper34/spooty/compare/2.0.5...2.0.6)
 
 > 1 April 2025
+
+- ci(netlify): remove netlify cli from deps [`e4cde85`](https://github.com/Raiper34/spooty/commit/e4cde8585ba0dfc422cec89360612947ebe92ff1)
+- fix(ytdl): Upgrade ytdl package (automated) [`5f30f31`](https://github.com/Raiper34/spooty/commit/5f30f3116f34ceb48d00e3abd5c606e8f9b7caba)
+- feat(names): strip special characters from file and folder names [`6f39c1e`](https://github.com/Raiper34/spooty/commit/6f39c1e5dc4b8f87917a18d2a23cec6b5cd9ca60)
+- ci(github-actions): fix github actions update ytdl script [`04d8987`](https://github.com/Raiper34/spooty/commit/04d8987aa51a8887bf1b8b41e8680c2db9530bef)
 
 #### [2.0.5](https://github.com/Raiper34/spooty/compare/2.0.4...2.0.5)
 
