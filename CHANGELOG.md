@@ -2,10 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.0.9](https://github.com/Raiper34/spooty/compare/2.0.8...2.0.9)
+
+- fix(ytdl): Upgrade ytdl package (automated) [`cc6a201`](https://github.com/Raiper34/spooty/commit/cc6a20196d474152eecaeb9862edfb3505ed3106)
+
 #### [2.0.8](https://github.com/Raiper34/spooty/compare/2.0.7...2.0.8)
 
-- docs(readme): remove docs, netlify and docsify, keep only readme docs for now [`bc9482c`](https://github.com/Raiper34/spooty/commit/bc9482c6cb9a47aa0d96fa34866546ec552d1e3c)
-- fix(ytdl): Upgrade ytdl package (automated) [`17b875e`](https://github.com/Raiper34/spooty/commit/17b875e2825cb739767565be5d86aba3a48a9208)
+> 27 April 2025
 
 #### [2.0.7](https://github.com/Raiper34/spooty/compare/2.0.6...2.0.7)
 
