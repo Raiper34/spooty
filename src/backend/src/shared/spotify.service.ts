@@ -9,10 +9,14 @@ export class SpotifyService {
 
   async getPlaylistDetail(
     spotifyUrl: string,
-  ): Promise<{ name: string; tracks: any[] }> {
+  ): Promise<{ name: string; tracks: any[]; image: string }> {
     this.logger.debug(`Get playlist ${spotifyUrl} on Spotify`);
     const detail = await getDetails(spotifyUrl);
-    return { name: detail.preview.title, tracks: detail?.tracks ?? [] };
+    return {
+      name: detail.preview.title,
+      tracks: detail?.tracks ?? [],
+      image: detail.preview.image,
+    };
   }
 
   async getPlaylistTracks(spotifyUrl: string): Promise<any[]> {

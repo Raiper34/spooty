@@ -21,6 +21,9 @@ export class PlaylistEntity {
   @Column({ default: () => Date.now() })
   createdAt?: number;
 
+  @Column({ nullable: true })
+  coverUrl?: string;
+
   @OneToMany(() => TrackEntity, (track) => track.playlist)
   tracks?: TrackEntity[];
 }

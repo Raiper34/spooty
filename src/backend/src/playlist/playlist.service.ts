@@ -52,7 +52,11 @@ export class PlaylistService {
     let playlist2Save: PlaylistEntity;
     try {
       detail = await this.spotifyService.getPlaylistDetail(playlist.spotifyUrl);
-      playlist2Save = { ...playlist, name: detail.name };
+      playlist2Save = {
+        ...playlist,
+        name: detail.name,
+        coverUrl: detail.image,
+      };
       this.createPlaylistFolderStructure(playlist2Save.name);
     } catch (err) {
       playlist2Save = { ...playlist, error: String(err) };
@@ -102,7 +106,9 @@ export class PlaylistService {
     for (const playlist of activePlaylists) {
       let tracks = [];
       try {
-        tracks = await this.spotifyService.getPlaylistTracks(playlist.spotifyUrl);
+        tracks = await this.spotifyService.getPlaylistTracks(
+          playlist.spotifyUrl,
+        );
         this.createPlaylistFolderStructure(playlist.name);
       } catch (err) {
         await this.update(playlist.id, { ...playlist, error: String(err) });

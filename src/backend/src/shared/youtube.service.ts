@@ -8,6 +8,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import * as yts from 'yt-search';
 import * as ytdl from '@distube/ytdl-core';
 import { Readable } from 'stream';
+const NodeID3 = require('node-id3');
 
 const META_DATA_TITLE = '-metadata';
 const YT_SETTINGS: ytdl.downloadOptions = {
@@ -34,7 +35,9 @@ export class YoutubeService {
   }
 
   downloadAndFormat(track: TrackEntity, folderName: string): Promise<void> {
-    this.logger.debug(`Downloading ${track.artist} - ${track.name} (${track.youtubeUrl}) from YT`);
+    this.logger.debug(
+      `Downloading ${track.artist} - ${track.name} (${track.youtubeUrl}) from YT`,
+    );
     return new Promise((res, reject) => {
       ffmpeg(this.getYoutubeAudio(track.youtubeUrl, reject))
         .outputOptions(...this.getFfmpegOptions(track.name, track.artist))
@@ -52,6 +55,26 @@ export class YoutubeService {
             .on(StreamStates.Error, (err) => reject(err)),
         );
     });
+  }
+
+  async addImage(folderName: string, coverUrl: string): Promise<void> {
+    if (coverUrl) {
+      const res = await fetch(coverUrl);
+      const arrayBuf = await res.arrayBuffer();
+      const imageBuffer = Buffer.from(arrayBuf);
+
+      NodeID3.write(
+        {
+          APIC: {
+            mime: 'image/jpeg',
+            type: { id: 3, name: 'front cover' },
+            description: 'cover',
+            imageBuffer,
+          },
+        },
+        folderName,
+      );
+    }
   }
 
   private getFfmpegOptions(name: string, artist: string): string[] {
