@@ -118,7 +118,12 @@ export class TrackService {
     try {
       const folderName = this.getFolderName(track, track.playlist);
       await this.youtubeService.downloadAndFormat(track, folderName);
-      await this.youtubeService.addImage(folderName, track.playlist.coverUrl);
+      await this.youtubeService.addImage(
+        folderName,
+        track.playlist.coverUrl,
+        track.name,
+        track.artist,
+      );
     } catch (err) {
       this.logger.error(err);
       error = String(err);

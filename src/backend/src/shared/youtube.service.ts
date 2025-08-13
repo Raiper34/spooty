@@ -10,7 +10,6 @@ import * as ytdl from '@distube/ytdl-core';
 import { Readable } from 'stream';
 const NodeID3 = require('node-id3');
 
-const META_DATA_TITLE = '-metadata';
 const YT_SETTINGS: ytdl.downloadOptions = {
   quality: 'highestaudio',
   filter: 'audioonly',
@@ -40,7 +39,6 @@ export class YoutubeService {
     );
     return new Promise((res, reject) => {
       ffmpeg(this.getYoutubeAudio(track.youtubeUrl, reject))
-        .outputOptions(...this.getFfmpegOptions(track.name, track.artist))
         .format(this.configService.get<string>(EnvironmentEnum.FORMAT))
         .on(StreamStates.Error, (err) => reject(err))
         .pipe(
@@ -57,7 +55,12 @@ export class YoutubeService {
     });
   }
 
-  async addImage(folderName: string, coverUrl: string): Promise<void> {
+  async addImage(
+    folderName: string,
+    coverUrl: string,
+    title: string,
+    artist: string,
+  ): Promise<void> {
     if (coverUrl) {
       const res = await fetch(coverUrl);
       const arrayBuf = await res.arrayBuffer();
@@ -65,6 +68,8 @@ export class YoutubeService {
 
       NodeID3.write(
         {
+          title,
+          artist,
           APIC: {
             mime: 'image/jpeg',
             type: { id: 3, name: 'front cover' },
@@ -75,15 +80,6 @@ export class YoutubeService {
         folderName,
       );
     }
-  }
-
-  private getFfmpegOptions(name: string, artist: string): string[] {
-    return [
-      META_DATA_TITLE,
-      `title=${name}`,
-      META_DATA_TITLE,
-      `artist=${artist}`,
-    ];
   }
 
   private getYoutubeAudio(
