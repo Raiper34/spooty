@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.1.1](https://github.com/Raiper34/spooty/compare/2.1.0...2.1.1)
+
+- feat(gui): add version to gui header [`#25`](https://github.com/Raiper34/spooty/issues/25)
+- fix(track): fix track missing artist and title tags [`b93993c`](https://github.com/Raiper34/spooty/commit/b93993c6cf034dccad3df08485d2126614874743)
+- style(gui): change gui primary to match spotify primary color [`5068fa8`](https://github.com/Raiper34/spooty/commit/5068fa8a4b724ef4a1060dc4d83cc80afee08bad)
+
 #### [2.1.0](https://github.com/Raiper34/spooty/compare/2.0.11...2.1.0)
+
+> 12 August 2025
 
 - feat(track): add track cover art into downloaded file [`#24`](https://github.com/Raiper34/spooty/issues/24)
 
