@@ -17,13 +17,13 @@
         </span>
     <span>
       <i class="fa-solid is-clickable hover-icon"
-         [ngClass]="playlist.active ? 'fa-lock-open' : 'fa-lock'"
-         [title]="playlist.active ? 'Unsubscribe from playlist changes' : 'Subscribe to playlist changes'"
+         [ngClass]="playlist.active ? 'fa-toggle-on' : 'fa-toggle-off'"
+         [title]="playlist.active ? '[ON]: Unsubscribe from playlist changes?' : '[OFF]: Subscribe to playlist changes?'"
          (click)="toggleActive(playlist.id, playlist.active)"
       ></i>&nbsp;
       <i class="fa-solid fa-repeat is-clickable hover-icon" title="Retry download failed tracks" (click)="retryFailed(playlist.id)"></i>&nbsp;
       <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove playlist from list" (click)="delete(playlist.id)"></i>&nbsp;
-      <i *ngIf="playlist.active" class="fa-solid fa-lock hover-icon-reversed"></i>&nbsp;
+      <i *ngIf="playlist.active" class="fa-solid fa-toggle-on hover-icon-reversed"></i>&nbsp;
       <span *ngIf="!playlist.error" class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
     </span>
   </p>

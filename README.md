@@ -19,6 +19,7 @@ The project is based on NestJS and Angular.
 
 ### Content
 - [🚀 Installation](#-installation)
+  - [Spotify App Configuration](#spotify-app-configuration)
   - [Docker](#docker)
     - [Docker command](#docker-command)
     - [Docker compose](#docker-compose)
@@ -31,6 +32,18 @@ The project is based on NestJS and Angular.
 ## 🚀 Installation
 Recommended and the easiest way how to start to use of Spooty is using docker.
 
+### Spotify App Configuration
+
+To fully use Spooty, you need to create an application in the Spotify Developer Dashboard:
+
+1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Sign in with your Spotify account
+3. Create a new application
+4. Note your `Client ID` and `Client Secret`
+5. Configure the redirect URI to `http://localhost:3000/api/callback` (or the corresponding URL of your instance)
+
+These credentials will be used by Spooty to access the Spotify API.
+
 ### Docker
 
 Just run docker command or use docker compose configuration.
@@ -38,7 +51,11 @@ For detailed configuration, see available [environment variables](#environment-v
 
 #### Docker command
 ```shell
-docker run -d -p 3000:3000 -v /path/to/downloads:/spooty/backend/downloads raiper34/spooty:latest
+docker run -d -p 3000:3000 \
+  -v /path/to/downloads:/spooty/backend/downloads \
+  -e SPOTIFY_CLIENT_ID=your_client_id \
+  -e SPOTIFY_CLIENT_SECRET=your_client_secret \
+  raiper34/spooty:latest
 ```
 
 #### Docker compose
@@ -52,6 +69,10 @@ services:
       - "3000:3000"
     volumes:
       - /path/to/downloads:/spooty/backend/downloads
+    environment:
+      - SPOTIFY_CLIENT_ID=your_client_id
+      - SPOTIFY_CLIENT_SECRET=your_client_secret
+      # Configure other environment variables if needed
 ```
 
 ### Build from source
@@ -66,6 +87,11 @@ Spooty can be also build from source files on your own.
 - install Node v18.19.1 using `nvm install` and use that node version `nvm use`
 - from project root install all dependencies using `npm install`
 - copy `.env.default` as `.env` in `src/backend` folder and modify desired environment properties (see [environment variables](#environment-variables))
+- add your Spotify application credentials to the `.env` file:
+  ```
+  SPOTIFY_CLIENT_ID=your_client_id
+  SPOTIFY_CLIENT_SECRET=your_client_secret
+  ```
 - build source files `npm run build`
     - built project will be stored in `dist` folder
 - start server `npm run start`
@@ -74,16 +100,18 @@ Spooty can be also build from source files on your own.
 
 Some behaviour and settings of Spooty can be configured using environment variables and `.env` file.
 
- Name           | Default                                     | Description                                                                                                                                                      |
-----------------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
- DB_PATH        | `./config/db.sqlite` (relative to backend)  | Path where Spooty database will be stored                                                                                                                        |
- FE_PATH        | `../frontend/browser` (relative to backend) | Path to frontend part of application                                                                                                                             |
- DOWNLOADS_PATH | `./downloads` (relative to backend)         | Path where downaloded files will be stored                                                                                                                       |
- FORMAT         | `mp3`                                       | Format of downloaded files (currently fully supported only `mp3` but you can try whatever you want from [ffmpeg](https://ffmpeg.org/ffmpeg-formats.html#Muxers)) |
- PORT           | 3000                                        | Port of Spooty server                                                                                                                                            |
- REDIS_PORT     | 6379                                        | Port of Redis server                                                                                                                                             |
- REDIS_HOST     | localhost                                   | Host of Redis server                                                                                                                                             |
- RUN_REDIS      | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                                        |
+ Name                 | Default                                     | Description                                                                                                                                                      |
+----------------------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+ DB_PATH              | `./config/db.sqlite` (relative to backend)  | Path where Spooty database will be stored                                                                                                                        |
+ FE_PATH              | `../frontend/browser` (relative to backend) | Path to frontend part of application                                                                                                                             |
+ DOWNLOADS_PATH       | `./downloads` (relative to backend)         | Path where downaloded files will be stored                                                                                                                       |
+ FORMAT               | `mp3`                                       | Format of downloaded files (currently fully supported only `mp3` but you can try whatever you want from [ffmpeg](https://ffmpeg.org/ffmpeg-formats.html#Muxers)) |
+ PORT                 | 3000                                        | Port of Spooty server                                                                                                                                            |
+ REDIS_PORT           | 6379                                        | Port of Redis server                                                                                                                                             |
+ REDIS_HOST           | localhost                                   | Host of Redis server                                                                                                                                             |
+ RUN_REDIS            | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                                        |
+ SPOTIFY_CLIENT_ID    | your_client_id                              | Client ID of your Spotify application (required)                                                                                                                  |
+ SPOTIFY_CLIENT_SECRET| your_client_secret                          | Client Secret of your Spotify application (required)                                                                                                              |
 
 # ⚖️ License
 [MIT](https://choosealicense.com/licenses/mit/)
