@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {AsyncPipe, CommonModule, NgForOf, NgIf} from "@angular/common";
+import {AsyncPipe, CommonModule, NgIf} from "@angular/common";
 import {TrackListComponent} from "../track-list/track-list.component";
 import {PlaylistService, PlaylistStatusEnum, PlaylistUi} from "../../services/playlist.service";
 import {Observable, map} from "rxjs";

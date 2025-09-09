@@ -48,10 +48,14 @@ export class PlaylistService {
   }
 
   async create(playlist: PlaylistEntity): Promise<void> {
-    let detail;
+    let detail: { tracks: any; name: any; image: any };
     let playlist2Save: PlaylistEntity;
     try {
       detail = await this.spotifyService.getPlaylistDetail(playlist.spotifyUrl);
+      this.logger.debug(
+        `Playlist detail retrieved with ${detail.tracks?.length || 0} tracks`,
+      );
+
       playlist2Save = {
         ...playlist,
         name: detail.name,
@@ -59,18 +63,70 @@ export class PlaylistService {
       };
       this.createPlaylistFolderStructure(playlist2Save.name);
     } catch (err) {
+      this.logger.error(`Error getting playlist details: ${err}`);
       playlist2Save = { ...playlist, error: String(err) };
     }
     const savedPlaylist = await this.save(playlist2Save);
-    for (const track of detail.tracks ?? []) {
-      await this.trackService.create(
-        {
-          artist: track.artist,
-          name: track.name,
-          spotifyUrl: track.previewUrl,
-        },
-        savedPlaylist,
+
+    if (detail?.tracks && detail.tracks.length > 0) {
+      this.logger.debug(
+        `Starting to process ${detail.tracks.length} tracks for playlist ${savedPlaylist.name}`,
       );
+
+      let processedCount = 0;
+      let skippedCount = 0;
+      let errorCount = 0;
+
+      for (const track of detail.tracks) {
+        try {
+          if (!track.artist || !track.name) {
+            this.logger.warn(
+              `Skipping track ${processedCount + skippedCount + 1}: Missing artist or name information`,
+            );
+            skippedCount++;
+            continue;
+          }
+
+          if (track.unavailable === true) {
+            this.logger.warn(
+              `Skipping unavailable track ${processedCount + skippedCount + 1}: ${track.artist} - ${track.name}`,
+            );
+            skippedCount++;
+            continue;
+          }
+
+          await this.trackService.create(
+            {
+              artist: track.artist,
+              name: track.name,
+              spotifyUrl: track.previewUrl || null,
+            },
+            savedPlaylist,
+          );
+
+          processedCount++;
+
+          if (processedCount % 100 === 0) {
+            this.logger.debug(
+              `Processed ${processedCount} tracks so far for playlist ${savedPlaylist.name}`,
+            );
+          }
+        } catch (error) {
+          this.logger.error(
+            `Error creating track "${
+              track?.artist || 'Unknown'
+            } - ${track?.name || 'Unknown'}": ${error.message}`,
+          );
+          errorCount++;
+        }
+      }
+
+      this.logger.debug(
+        `Finished processing playlist ${savedPlaylist.name}: ` +
+          `${processedCount} tracks processed, ${skippedCount} skipped, ${errorCount} errors`,
+      );
+    } else {
+      this.logger.warn(`No tracks found for playlist ${savedPlaylist.name}`);
     }
   }
 
