@@ -10,21 +10,39 @@ import * as ytdl from '@distube/ytdl-core';
 import { Readable } from 'stream';
 const NodeID3 = require('node-id3');
 
-const YT_SETTINGS: ytdl.downloadOptions = {
-  quality: 'highestaudio',
-  filter: 'audioonly',
-};
-
 enum StreamStates {
   Finish = 'finish',
   Error = 'error',
 }
 
+function parseCookies(
+  cookieString?: string,
+): { name: string; value: string }[] | undefined {
+  if (!cookieString) return undefined;
+  return cookieString
+    .split(';')
+    .map((c) => {
+      const [name, ...rest] = c.split('=');
+      return { name: name.trim(), value: rest.join('=').trim() };
+    })
+    .filter((c) => c.name && c.value);
+}
+
 @Injectable()
 export class YoutubeService {
   private readonly logger = new Logger(TrackService.name);
+  private readonly ytCookies: string | undefined;
+  private readonly ytAgent: any | undefined;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    this.ytCookies = this.configService.get<string>('YT_COOKIES');
+    if (this.ytCookies) {
+      const cookiesArr = parseCookies(this.ytCookies);
+      if (cookiesArr && cookiesArr.length > 0) {
+        this.ytAgent = ytdl.createAgent(cookiesArr);
+      }
+    }
+  }
 
   async findOnYoutubeOne(artist: string, name: string): Promise<string> {
     this.logger.debug(`Searching ${artist} - ${name} on YT`);
@@ -86,7 +104,23 @@ export class YoutubeService {
     youtubeUrl: string,
     reject: (reason: any) => void,
   ): Readable {
-    return ytdl(youtubeUrl, YT_SETTINGS).on(StreamStates.Error, (err) =>
+    if (!youtubeUrl) {
+      this.logger.error('youtubeUrl is null or undefined');
+      reject('youtubeUrl is null or undefined');
+      return null;
+    }
+    const options: ytdl.downloadOptions = {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+      agent: this.ytAgent,
+      requestOptions: {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+      },
+    };
+    return ytdl(youtubeUrl, options).on(StreamStates.Error, (err) =>
       reject(err),
     );
   }

@@ -6,12 +6,8 @@ import { TrackController } from './track.controller';
 import { ConfigModule } from '@nestjs/config';
 import { SharedModule } from '../shared/shared.module';
 import { BullModule } from '@nestjs/bullmq';
-import {
-  TrackDownloadProcessor,
-} from './track-download.processor';
-import {
-  TrackSearchProcessor,
-} from './track-search.processor';
+import { TrackDownloadProcessor } from './track-download.processor';
+import { TrackSearchProcessor } from './track-search.processor';
 
 @Module({
   imports: [
