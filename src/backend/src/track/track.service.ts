@@ -110,6 +110,17 @@ export class TrackService {
     if (!(await this.get(track.id))) {
       return;
     }
+    if (
+      !track.name ||
+      !track.artist ||
+      !track.playlist ||
+      !track.playlist.coverUrl
+    ) {
+      this.logger.error(
+        `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}, coverUrl=${track.playlist?.coverUrl}`,
+      );
+      return;
+    }
     await this.update(track.id, {
       ...track,
       status: TrackStatusEnum.Downloading,
@@ -137,13 +148,16 @@ export class TrackService {
   }
 
   getTrackFileName(track: TrackEntity): string {
-    const fileName = `${track.artist} - ${track.name.replace('/', '')}`;
+    const safeArtist = track.artist || 'unknown_artist';
+    const safeName = (track.name || 'unknown_track').replace('/', '');
+    const fileName = `${safeArtist} - ${safeName}`;
     return `${this.utilsService.stripFileIllegalChars(fileName)}.${this.configService.get<string>(EnvironmentEnum.FORMAT)}`;
   }
 
   getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {
+    const safePlaylistName = playlist?.name || 'unknown_playlist';
     return resolve(
-      this.utilsService.getPlaylistFolderPath(playlist.name),
+      this.utilsService.getPlaylistFolderPath(safePlaylistName),
       this.getTrackFileName(track),
     );
   }

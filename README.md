@@ -112,6 +112,17 @@ Some behaviour and settings of Spooty can be configured using environment variab
  RUN_REDIS            | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                                        |
  SPOTIFY_CLIENT_ID    | your_client_id                              | Client ID of your Spotify application (required)                                                                                                                  |
  SPOTIFY_CLIENT_SECRET| your_client_secret                          | Client Secret of your Spotify application (required)                                                                                                              |
+ YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                                  |
+ YT_COOKIES           |                                             | Allows you to pass your YouTube cookies to bypass some download restrictions. See [below](#how-to-get-your-youtube-cookies) for instructions.                   |
+
+How to get your YouTube cookies (using browser dev tools):
+1. Go to https://www.youtube.com and log in if needed.
+2. Open the browser developer tools (F12 or right click > Inspect).
+3. Go to the "Application" tab (in Chrome) or "Storage" (in Firefox).
+4. In the left menu, find "Cookies" and select https://www.youtube.com.
+5. Copy all the cookies (name=value) and join them with a semicolon and a space, like:
+   VISITOR_INFO1_LIVE=xxxx; YSC=xxxx; SID=xxxx; ...
+6. Paste this string into the YT_COOKIES environment variable (in your .env or Docker config).
 
 # ⚖️ License
 [MIT](https://choosealicense.com/licenses/mit/)
