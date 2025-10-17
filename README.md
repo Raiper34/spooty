@@ -115,7 +115,7 @@ Some behaviour and settings of Spooty can be configured using environment variab
  YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                                  |
  YT_COOKIES           |                                             | Allows you to pass your YouTube cookies to bypass some download restrictions. See [below](#how-to-get-your-youtube-cookies) for instructions.                   |
 
-How to get your YouTube cookies (using browser dev tools):
+### How to get your YouTube cookies (using browser dev tools):
 1. Go to https://www.youtube.com and log in if needed.
 2. Open the browser developer tools (F12 or right click > Inspect).
 3. Go to the "Application" tab (in Chrome) or "Storage" (in Firefox).
