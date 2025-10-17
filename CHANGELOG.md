@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.2.0](https://github.com/Raiper34/spooty/compare/2.1.1...2.2.0)
+
+- feat(spotify): integrate Spotify API for playlist metadata and track retrieval [`de55e42`](https://github.com/Raiper34/spooty/commit/de55e42fcd246d86e8d3156d8e0ab4898b5755d6)
+- feat(youtube): use youtube cookies to bypass limitation & add timeout between each downloads [`4c05178`](https://github.com/Raiper34/spooty/commit/4c051782fd8808a808fe49fe1509ec0b0db9d05e)
+
 #### [2.1.1](https://github.com/Raiper34/spooty/compare/2.1.0...2.1.1)
+
+> 13 August 2025
 
 - feat(gui): add version to gui header [`#25`](https://github.com/Raiper34/spooty/issues/25)
 - fix(track): fix track missing artist and title tags [`b93993c`](https://github.com/Raiper34/spooty/commit/b93993c6cf034dccad3df08485d2126614874743)
