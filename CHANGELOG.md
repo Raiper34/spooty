@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.2.1](https://github.com/Raiper34/spooty/compare/2.2.0...2.2.1)
+
+- fix(downloading): migrate from @distube/ytdl-core to ytdlp-nodejs yt downloading library [`5795f7c`](https://github.com/Raiper34/spooty/commit/5795f7cc178ab4d8a8d3d8a7e94f33743ff6e9e0)
+- fix(docker): add python3 dependency into docker image for yt download library [`46d7c66`](https://github.com/Raiper34/spooty/commit/46d7c6699bc8698896b22837e8507885677a71bd)
+- docs(readme): fix yt cookies section heading [`285578f`](https://github.com/Raiper34/spooty/commit/285578ff1ed1d7fe14d7ddd0d95a4b8079276e4e)
+- docs(readme): add docker versio badge into readme [`4be3743`](https://github.com/Raiper34/spooty/commit/4be3743f7b5a8019bd6ed0d2248f23a254a82603)
+
 #### [2.2.0](https://github.com/Raiper34/spooty/compare/2.1.1...2.2.0)
+
+> 17 October 2025
 
 - feat(spotify): integrate Spotify API for playlist metadata and track retrieval [`de55e42`](https://github.com/Raiper34/spooty/commit/de55e42fcd246d86e8d3156d8e0ab4898b5755d6)
 - feat(youtube): use youtube cookies to bypass limitation & add timeout between each downloads [`4c05178`](https://github.com/Raiper34/spooty/commit/4c051782fd8808a808fe49fe1509ec0b0db9d05e)
