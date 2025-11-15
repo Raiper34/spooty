@@ -11,10 +11,10 @@ COPY --from=builder /spooty/src ./src
 COPY --from=builder /spooty/package.json ./package.json
 COPY --from=builder /spooty/package-lock.json ./package-lock.json
 COPY --from=builder /spooty/src/backend/.env.docker ./.env
-RUN rm -rf node_modules
-RUN npm ci --omit=dev
+RUN npm prune --production
 RUN rm -rf src package.json package-lock.json
 RUN apk add --no-cache ffmpeg
 RUN apk add --no-cache redis
+RUN apk add --no-cache python3 py3-pip
 EXPOSE 3000
 CMD ["node", "backend/main.js"]

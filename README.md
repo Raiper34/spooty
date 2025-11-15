@@ -83,6 +83,8 @@ Spooty can be also build from source files on your own.
 #### Requirements
 - Node v18.19.1 (it is recommended to use `nvm` node version manager to install proper version of node)
 - Redis in memory cache
+- Ffmpeg
+- Python3
 
 #### Process
 - install Node v18.19.1 using `nvm install` and use that node version `nvm use`
