@@ -18,7 +18,7 @@
     "changelog": "auto-changelog -p",
     "release": "release-it",
     "commit": "cz",
-    "check:lib": "npm-check-updates -w backend -f @distube/ytdl-core -u"
+    "check:lib": "npm-check-updates -w backend -f ytdlp-nodejs -u"
   },
   "devDependencies": {
     "@release-it/bumper": "^7.0.1",
