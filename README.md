@@ -16,8 +16,6 @@ The project is based on NestJS and Angular.
 > [!IMPORTANT]
 > Please do not use this tool for piracy! Download only music you own rights! Use this tool only on your responsibility.
 
-![demo](assets/demo.gif)
-
 ### Content
 - [🚀 Installation](#-installation)
   - [Spotify App Configuration](#spotify-app-configuration)
