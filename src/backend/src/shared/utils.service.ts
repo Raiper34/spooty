@@ -16,6 +16,14 @@ export class UtilsService {
     );
   }
 
+  getRootDownloadsPath(): string {
+    return resolve(
+      __dirname,
+      '..',
+      this.configService.get<string>(EnvironmentEnum.DOWNLOADS_PATH),
+    );
+  }
+
   stripFileIllegalChars(text: string): string {
     return text.replace(/[/\\?%*:|"<>]/g, '-');
   }

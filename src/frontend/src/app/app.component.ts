@@ -4,6 +4,7 @@ import {CommonModule, NgFor} from "@angular/common";
 import {PlaylistService, PlaylistStatusEnum} from "./services/playlist.service";
 import {PlaylistBoxComponent} from "./components/playlist-box/playlist-box.component";
 import {VersionService} from "./services/version.service";
+import {map} from "rxjs";
 
 @Component({
     selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent {
 
   url = ''
   createLoading$ = this.playlistService.createLoading$;
-  playlists$ = this.playlistService.all$;
+  playlists$ = this.playlistService.all$.pipe(map(items => items.filter(item => !item.isTrack)));
+  songs$ = this.playlistService.all$.pipe(map(items => items.filter(item => item.isTrack)));
   version = this.versionService.getVersion();
 
   constructor(

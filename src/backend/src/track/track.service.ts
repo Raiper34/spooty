@@ -113,13 +113,19 @@ export class TrackService {
     if (
       !track.name ||
       !track.artist ||
-      !track.playlist ||
-      !track.playlist.coverUrl
+      !track.playlist
     ) {
       this.logger.error(
-        `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}, coverUrl=${track.playlist?.coverUrl}`,
+        `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}`,
       );
       return;
+    }
+    // Use track's own coverUrl if available, otherwise fall back to playlist coverUrl
+    const coverUrl = track.coverUrl || track.playlist.coverUrl;
+    if (!coverUrl) {
+      this.logger.warn(
+        `No cover art available for track: ${track.artist} - ${track.name}`,
+      );
     }
     await this.update(track.id, {
       ...track,
@@ -129,12 +135,14 @@ export class TrackService {
     try {
       const folderName = this.getFolderName(track, track.playlist);
       await this.youtubeService.downloadAndFormat(track, folderName);
-      await this.youtubeService.addImage(
-        folderName,
-        track.playlist.coverUrl,
-        track.name,
-        track.artist,
-      );
+      if (coverUrl) {
+        await this.youtubeService.addImage(
+          folderName,
+          coverUrl,
+          track.name,
+          track.artist,
+        );
+      }
     } catch (err) {
       this.logger.error(err);
       error = String(err);
@@ -155,6 +163,14 @@ export class TrackService {
   }
 
   getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {
+    // Individual tracks (isTrack=true) go in root downloads folder, playlists in subfolders
+    if (playlist?.isTrack) {
+      return resolve(
+        this.utilsService.getRootDownloadsPath(),
+        this.getTrackFileName(track),
+      );
+    }
+    
     const safePlaylistName = playlist?.name || 'unknown_playlist';
     return resolve(
       this.utilsService.getPlaylistFolderPath(safePlaylistName),
