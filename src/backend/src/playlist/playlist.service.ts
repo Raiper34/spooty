@@ -48,6 +48,59 @@ export class PlaylistService {
   }
 
   async create(playlist: PlaylistEntity): Promise<void> {
+    // Detect if URL is for a single track or a playlist and route accordingly
+    const isTrack = this.spotifyService.isTrackUrl(playlist.spotifyUrl);
+
+    if (isTrack) {
+      await this.createSingleTrack(playlist);
+    } else {
+      await this.createPlaylist(playlist);
+    }
+  }
+
+  private async createSingleTrack(playlist: PlaylistEntity): Promise<void> {
+    let trackDetail: { name: string; artist: string; image: string };
+    let playlist2Save: PlaylistEntity;
+    try {
+      trackDetail = await this.spotifyService.getTrackDetail(
+        playlist.spotifyUrl,
+      );
+      this.logger.debug(`Track detail retrieved: ${trackDetail.name}`);
+
+      playlist2Save = {
+        ...playlist,
+        name: trackDetail.name,
+        coverUrl: trackDetail.image,
+        isTrack: true,
+        active: false, // Single tracks cannot be subscribed
+      };
+      // Don't create folder structure for individual tracks - they go in root
+    } catch (err) {
+      this.logger.error(`Error getting track details: ${err}`);
+      playlist2Save = { ...playlist, error: String(err), isTrack: true };
+    }
+    const savedPlaylist = await this.save(playlist2Save);
+
+    if (trackDetail) {
+      try {
+        await this.trackService.create(
+          {
+            artist: trackDetail.artist,
+            name: trackDetail.name,
+            spotifyUrl: playlist.spotifyUrl,
+            coverUrl: trackDetail.image,
+          },
+          savedPlaylist,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Error creating track "${trackDetail.artist} - ${trackDetail.name}": ${error.message}`,
+        );
+      }
+    }
+  }
+
+  private async createPlaylist(playlist: PlaylistEntity): Promise<void> {
     let detail: { tracks: any; name: any; image: any };
     let playlist2Save: PlaylistEntity;
     try {
@@ -100,6 +153,7 @@ export class PlaylistService {
               artist: track.artist,
               name: track.name,
               spotifyUrl: track.previewUrl || null,
+              coverUrl: track.coverUrl || savedPlaylist.coverUrl, // Use track's album art, fallback to playlist cover
             },
             savedPlaylist,
           );
@@ -158,7 +212,10 @@ export class PlaylistService {
 
   @Interval(3_600_000)
   async checkActivePlaylists(): Promise<void> {
-    const activePlaylists = await this.findAll({}, { active: true });
+    // Only check actual playlists (not individual tracks) that are subscribed
+    const activePlaylists = await this.findAll(
+      { active: true, isTrack: false },
+    );
     for (const playlist of activePlaylists) {
       let tracks = [];
       try {

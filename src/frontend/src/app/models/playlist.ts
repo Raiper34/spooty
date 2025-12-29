@@ -4,5 +4,6 @@ export interface Playlist {
   spotifyUrl: string;
   error?: string;
   active: boolean;
+  isTrack?: boolean;
   createdAt: number;
 }

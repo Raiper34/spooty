@@ -7,11 +7,17 @@ import { EnvironmentEnum } from '../environmentEnum';
 export class UtilsService {
   constructor(private readonly configService: ConfigService) {}
 
-  getPlaylistFolderPath(name: string): string {
+  getRootDownloadsPath(): string {
     return resolve(
       __dirname,
       '..',
       this.configService.get<string>(EnvironmentEnum.DOWNLOADS_PATH),
+    );
+  }
+
+  getPlaylistFolderPath(name: string): string {
+    return resolve(
+      this.getRootDownloadsPath(),
       this.stripFileIllegalChars(name),
     );
   }

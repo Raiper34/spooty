@@ -7,6 +7,7 @@ export interface Track {
   status: TrackStatusEnum;
   playlistId?: number;
   error?: string;
+  coverUrl?: string;
 }
 
 export enum TrackStatusEnum {

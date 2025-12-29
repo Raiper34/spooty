@@ -27,6 +27,64 @@ export class SpotifyApiService {
     }
   }
 
+  isTrackUrl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.pathname.includes('/track/');
+    } catch {
+      return false;
+    }
+  }
+
+  private getTrackId(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      const trackIndex = pathParts.findIndex((part) => part === 'track');
+      if (trackIndex >= 0 && pathParts.length > trackIndex + 1) {
+        return pathParts[trackIndex + 1].split('?')[0];
+      }
+      throw new Error('Invalid Spotify track URL');
+    } catch (error) {
+      this.logger.error(`Failed to extract track ID: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getTrackMetadata(
+    spotifyUrl: string,
+  ): Promise<{ name: string; artist: string; image: string }> {
+    try {
+      this.logger.debug(`Getting track metadata for ${spotifyUrl}`);
+      const trackId = this.getTrackId(spotifyUrl);
+      const accessToken = await this.getAccessToken();
+
+      const response = await fetch(
+        `https://api.spotify.com/v1/tracks/${trackId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch track: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      return {
+        name: data.name,
+        artist: data.artists.map((a) => a.name).join(', '),
+        image: data.album.images[0]?.url || '',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get track metadata: ${error.message}`);
+      throw error;
+    }
+  }
+
   async getPlaylistMetadata(
     spotifyUrl: string,
   ): Promise<{ name: string; image: string }> {
@@ -95,38 +153,22 @@ export class SpotifyApiService {
     try {
       this.logger.debug(`Getting all tracks for playlist ${spotifyUrl}`);
 
-      const detail = await getDetails(spotifyUrl);
-      this.logger.debug(
-        `Initial tracks count from spotify-url-info: ${detail.tracks?.length || 0}`,
-      );
-
-      if (!detail.tracks || detail.tracks.length < 100) {
-        return detail.tracks || [];
-      }
-
-      this.logger.debug(
-        'Playlist has 100 or more tracks, using official Spotify API for pagination',
-      );
-
       const playlistId = this.getPlaylistId(spotifyUrl);
       this.logger.debug(`Extracted playlist ID: ${playlistId}`);
+      
+      const accessToken = await this.getAccessToken();
 
-      try {
-        const accessToken = await this.getAccessToken();
+      const allTracks = [];
+      let offset = 0;
+      let hasMoreTracks = true;
 
-        const allTracks = [...detail.tracks];
-        let offset = 0;
-        let hasMoreTracks = true;
-
-        allTracks.length = 0;
-
-        while (hasMoreTracks) {
+      while (hasMoreTracks) {
           this.logger.debug(
             `Fetching tracks from Spotify API with offset ${offset}`,
           );
 
           const response = await fetch(
-            `https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${offset}&limit=100&fields=items(track(name,artists,preview_url)),next`,
+            `https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${offset}&limit=100&fields=items(track(id,name,artists,preview_url,album(images))),next`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -153,14 +195,22 @@ export class SpotifyApiService {
           const pageTracks = data.items
             .map(
               (item: {
-                track: { name: any; artists: any[]; preview_url: any };
+                track: {
+                  id: string;
+                  name: any;
+                  artists: any[];
+                  preview_url: any;
+                  album: { images: any[] };
+                };
               }) => {
                 if (!item.track) return null;
 
                 return {
+                  id: item.track.id,
                   name: item.track.name,
                   artist: item.track.artists.map((a) => a.name).join(', '),
                   previewUrl: item.track.preview_url,
+                  coverUrl: item.track.album?.images?.[0]?.url || null,
                 };
               },
             )
@@ -185,13 +235,6 @@ export class SpotifyApiService {
           `Total tracks retrieved from Spotify API: ${allTracks.length}`,
         );
         return allTracks;
-      } catch (apiError) {
-        this.logger.error(
-          `Failed to get tracks from Spotify API: ${apiError.message}`,
-        );
-        this.logger.debug('Falling back to initial tracks only');
-        return detail.tracks || [];
-      }
     } catch (error) {
       this.logger.error(`Failed to get all playlist tracks: ${error.message}`);
       throw error;

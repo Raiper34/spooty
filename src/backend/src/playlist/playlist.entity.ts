@@ -18,6 +18,9 @@ export class PlaylistEntity {
   @Column({ default: false })
   active?: boolean;
 
+  @Column({ default: false })
+  isTrack?: boolean; // True for individual tracks, false for actual playlists
+
   @Column({ default: () => Date.now() })
   createdAt?: number;
 

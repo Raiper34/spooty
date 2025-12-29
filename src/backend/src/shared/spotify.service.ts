@@ -12,6 +12,27 @@ export class SpotifyService {
 
   constructor(private readonly spotifyApiService: SpotifyApiService) {}
 
+  isTrackUrl(url: string): boolean {
+    return this.spotifyApiService.isTrackUrl(url);
+  }
+
+  async getTrackDetail(
+    spotifyUrl: string,
+  ): Promise<{ name: string; artist: string; image: string }> {
+    this.logger.debug(`Get track ${spotifyUrl} on Spotify`);
+    try {
+      return await this.spotifyApiService.getTrackMetadata(spotifyUrl);
+    } catch (error) {
+      this.logger.error(`Error getting track details: ${error.message}`);
+      const detail = await getDetails(spotifyUrl);
+      return {
+        name: detail.preview.title,
+        artist: detail.preview.artist || 'Unknown Artist',
+        image: detail.preview.image,
+      };
+    }
+  }
+
   async getPlaylistDetail(
     spotifyUrl: string,
   ): Promise<{ name: string; tracks: any[]; image: string }> {
