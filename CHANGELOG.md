@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.3.0](https://github.com/Raiper34/spooty/compare/2.2.1...2.3.0)
+
+- feat(track): allow download of individual track and fix album art [`#29`](https://github.com/Raiper34/spooty/issues/29)
+- docs(readme): remove demo image and gif from readme [`a2ac579`](https://github.com/Raiper34/spooty/commit/a2ac579854a6cbc95729d434c514fb2309f7a3bb)
+
 #### [2.2.1](https://github.com/Raiper34/spooty/compare/2.2.0...2.2.1)
+
+> 15 November 2025
 
 - fix(downloading): migrate from @distube/ytdl-core to ytdlp-nodejs yt downloading library [`5795f7c`](https://github.com/Raiper34/spooty/commit/5795f7cc178ab4d8a8d3d8a7e94f33743ff6e9e0)
 - fix(docker): add python3 dependency into docker image for yt download library [`46d7c66`](https://github.com/Raiper34/spooty/commit/46d7c6699bc8698896b22837e8507885677a71bd)
