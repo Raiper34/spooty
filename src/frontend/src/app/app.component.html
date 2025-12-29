@@ -37,8 +37,10 @@
         </button>
       </div>
     </div>
-      <app-playlist-box *ngFor="let playlist of playlists$ | async" [playlist]="playlist"></app-playlist-box>
-      <p *ngIf="(playlists$ | async)?.length === 0" class="has-text-grey has-text-centered">No playlists</p>
+      <ng-container *ngIf="playlists$ | async as playlists">
+        <app-playlist-box *ngFor="let playlist of playlists" [playlist]="playlist"></app-playlist-box>
+        <p *ngIf="playlists?.length === 0" class="has-text-grey has-text-centered">No playlists</p>
+      </ng-container>
     </div>
     <hr>
     <div class="box">
@@ -53,8 +55,10 @@
         </button>
       </div>
     </div>
-      <app-playlist-box *ngFor="let playlist of songs$ | async" [playlist]="playlist"></app-playlist-box>
-      <p *ngIf="(songs$ | async)?.length === 0" class="has-text-grey has-text-centered">No songs</p>
+      <ng-container *ngIf="songs$ | async as songs">
+        <app-playlist-box *ngFor="let playlist of songs" [playlist]="playlist"></app-playlist-box>
+        <p *ngIf="songs?.length === 0" class="has-text-grey has-text-centered">No songs</p>
+      </ng-container>
     </div>
   </div>
 </section>

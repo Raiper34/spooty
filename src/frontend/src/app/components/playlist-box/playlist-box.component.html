@@ -16,12 +16,14 @@
           </a>
         </span>
     <span>
-      <i *ngIf="!playlist.isTrack" class="fa-solid is-clickable hover-icon"
-         [ngClass]="playlist.active ? 'fa-toggle-on' : 'fa-toggle-off'"
-         [title]="playlist.active ? '[ON]: Unsubscribe from playlist changes?' : '[OFF]: Subscribe to playlist changes?'"
-         (click)="toggleActive(playlist.id, playlist.active)"
-      ></i>
-      <i *ngIf="!playlist.isTrack">&nbsp;</i>
+      <ng-container *ngIf="!playlist.isTrack">
+        <i class="fa-solid is-clickable hover-icon"
+           [ngClass]="playlist.active ? 'fa-toggle-on' : 'fa-toggle-off'"
+           [title]="playlist.active ? '[ON]: Unsubscribe from playlist changes?' : '[OFF]: Subscribe to playlist changes?'"
+           (click)="toggleActive(playlist.id, playlist.active)"
+        ></i>
+        <i>&nbsp;</i>
+      </ng-container>
       <i class="fa-solid fa-repeat is-clickable hover-icon" title="Retry download failed tracks" (click)="retryFailed(playlist.id)"></i>&nbsp;
       <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove playlist from list" (click)="delete(playlist.id)"></i>&nbsp;
       <i *ngIf="playlist.active" class="fa-solid fa-toggle-on hover-icon-reversed"></i>&nbsp;
