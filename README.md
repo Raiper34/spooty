@@ -39,7 +39,7 @@ To fully use Spooty, you need to create an application in the Spotify Developer 
 2. Sign in with your Spotify account
 3. Create a new application
 4. Note your `Client ID` and `Client Secret`
-5. Configure the redirect URI to `http://localhost:3000/api/callback` (or the corresponding URL of your instance)
+5. Configure the redirect URI to `http://127.0.0.1:3000/api/callback` (or the corresponding URL of your instance)
 
 These credentials will be used by Spooty to access the Spotify API.
 
