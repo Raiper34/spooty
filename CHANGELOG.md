@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.3.1](https://github.com/Raiper34/spooty/compare/2.3.0...2.3.1)
+
+- docs(readme): change redirect URI [`8162a2a`](https://github.com/Raiper34/spooty/commit/8162a2a21f762310f857dfc42cad53831769ed66)
+- fix(ytdl): Upgrade ytdl package (automated) [`08b83bf`](https://github.com/Raiper34/spooty/commit/08b83bf9de70999bddb47cd1d64d63d1ab550d88)
+
 #### [2.3.0](https://github.com/Raiper34/spooty/compare/2.2.1...2.3.0)
+
+> 29 December 2025
 
 - feat(track): allow download of individual track and fix album art [`#29`](https://github.com/Raiper34/spooty/issues/29)
 - docs(readme): remove demo image and gif from readme [`a2ac579`](https://github.com/Raiper34/spooty/commit/a2ac579854a6cbc95729d434c514fb2309f7a3bb)
