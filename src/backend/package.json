@@ -42,7 +42,7 @@
     "spotify-url-info": "^3.2.18",
     "sqlite3": "^5.1.7",
     "yt-search": "^2.12.1",
-    "ytdlp-nodejs": "^3.4.1"
+    "ytdlp-nodejs": "^3.4.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
