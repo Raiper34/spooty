@@ -2,13 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.3.4](https://github.com/Raiper34/spooty/compare/2.3.3...2.3.4)
+
+- fix(ytdl): Upgrade ytdl package (automated) [`ef32347`](https://github.com/Raiper34/spooty/commit/ef32347903d7caa2cc72c9c54341195b2ac0bb96)
+
 #### [2.3.3](https://github.com/Raiper34/spooty/compare/2.3.2...2.3.3)
 
-- fix(ytdl): Upgrade ytdl package (automated) [`cc552d1`](https://github.com/Raiper34/spooty/commit/cc552d1def309a3633aa67ca7f3659eb44ef47b2)
+> 30 January 2026
 
 #### [2.3.2](https://github.com/Raiper34/spooty/compare/2.3.1...2.3.2)
 
 > 26 January 2026
+
+- fix(ytdl): Upgrade ytdl package (automated) [`531730b`](https://github.com/Raiper34/spooty/commit/531730bc57f9ab1339277ad995f37611a9f55aa8)
 
 #### [2.3.1](https://github.com/Raiper34/spooty/compare/2.3.0...2.3.1)
 
