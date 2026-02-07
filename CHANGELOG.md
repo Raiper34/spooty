@@ -2,13 +2,23 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.4.0](https://github.com/Raiper34/spooty/compare/2.3.4...2.4.0)
+
+- feat(files): add possibility to set the audio quality of downloaded files [`#39`](https://github.com/Raiper34/spooty/issues/39)
+- fix(downloading): fix downloading songs from browser with special characters [`#41`](https://github.com/Raiper34/spooty/issues/41)
+- fix(downloadin): fix ejs runtime problem [`#38`](https://github.com/Raiper34/spooty/issues/38)
+
 #### [2.3.4](https://github.com/Raiper34/spooty/compare/2.3.3...2.3.4)
+
+> 4 February 2026
 
 - fix(ytdl): Upgrade ytdl package (automated) [`ef32347`](https://github.com/Raiper34/spooty/commit/ef32347903d7caa2cc72c9c54341195b2ac0bb96)
 
 #### [2.3.3](https://github.com/Raiper34/spooty/compare/2.3.2...2.3.3)
 
 > 30 January 2026
+
+- fix(ytdl): Upgrade ytdl package (automated) [`cc552d1`](https://github.com/Raiper34/spooty/commit/cc552d1def309a3633aa67ca7f3659eb44ef47b2)
 
 #### [2.3.2](https://github.com/Raiper34/spooty/compare/2.3.1...2.3.2)
 
