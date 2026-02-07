@@ -34,7 +34,9 @@ export class TrackController {
     const readStream = createReadStream(
       this.service.getFolderName(track, track.playlist),
     );
-    res.set({ 'Content-Disposition': `attachment; filename="${fileName}` });
+    res.set({
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}`,
+    });
     return new StreamableFile(readStream);
   }
 
