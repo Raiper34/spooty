@@ -1,10 +1,10 @@
-FROM node:18.20.4-alpine AS builder
+FROM node:20.20.0-alpine AS builder
 WORKDIR /spooty
 COPY . .
 RUN npm ci
 RUN npm run build
 
-FROM node:18.20.4-alpine
+FROM node:20.20.0-alpine
 WORKDIR /spooty
 COPY --from=builder /spooty/dist .
 COPY --from=builder /spooty/src ./src
