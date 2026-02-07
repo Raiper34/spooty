@@ -42,6 +42,7 @@ export class YoutubeService {
         cookiesFromBrowser: this.configService.get<string>('YT_COOKIES'),
         headers: HEADERS,
         jsRuntime: 'node',
+        audioQuality: this.configService.get<string>('QUALITY'),
       },
     );
     this.logger.debug(

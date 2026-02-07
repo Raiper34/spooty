@@ -79,13 +79,13 @@ services:
 Spooty can be also build from source files on your own.
 
 #### Requirements
-- Node v18.19.1 (it is recommended to use `nvm` node version manager to install proper version of node)
+- Node v20.20.0 (it is recommended to use `nvm` node version manager to install proper version of node)
 - Redis in memory cache
 - Ffmpeg
 - Python3
 
 #### Process
-- install Node v18.19.1 using `nvm install` and use that node version `nvm use`
+- install Node v20.20.0 using `nvm install` and use that node version `nvm use`
 - from project root install all dependencies using `npm install`
 - copy `.env.default` as `.env` in `src/backend` folder and modify desired environment properties (see [environment variables](#environment-variables))
 - add your Spotify application credentials to the `.env` file:
@@ -101,20 +101,21 @@ Spooty can be also build from source files on your own.
 
 Some behaviour and settings of Spooty can be configured using environment variables and `.env` file.
 
- Name                 | Default                                     | Description                                                                                                                                                      |
-----------------------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
- DB_PATH              | `./config/db.sqlite` (relative to backend)  | Path where Spooty database will be stored                                                                                                                        |
- FE_PATH              | `../frontend/browser` (relative to backend) | Path to frontend part of application                                                                                                                             |
- DOWNLOADS_PATH       | `./downloads` (relative to backend)         | Path where downaloded files will be stored                                                                                                                       |
- FORMAT               | `mp3`                                       | Format of downloaded files (currently fully supported only `mp3` but you can try whatever you want from [ffmpeg](https://ffmpeg.org/ffmpeg-formats.html#Muxers)) |
- PORT                 | 3000                                        | Port of Spooty server                                                                                                                                            |
- REDIS_PORT           | 6379                                        | Port of Redis server                                                                                                                                             |
- REDIS_HOST           | localhost                                   | Host of Redis server                                                                                                                                             |
- RUN_REDIS            | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                                        |
- SPOTIFY_CLIENT_ID    | your_client_id                              | Client ID of your Spotify application (required)                                                                                                                  |
- SPOTIFY_CLIENT_SECRET| your_client_secret                          | Client Secret of your Spotify application (required)                                                                                                              |
- YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                                  |
- YT_COOKIES           |                                             | Allows you to pass your YouTube cookies to bypass some download restrictions. See [below](#how-to-get-your-youtube-cookies) for instructions.                   |
+ Name                 | Default                                     | Description                                                                                                                                   |
+----------------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+ DB_PATH              | `./config/db.sqlite` (relative to backend)  | Path where Spooty database will be stored                                                                                                     |
+ FE_PATH              | `../frontend/browser` (relative to backend) | Path to frontend part of application                                                                                                          |
+ DOWNLOADS_PATH       | `./downloads` (relative to backend)         | Path where downaloded files will be stored                                                                                                    |
+ FORMAT               | `mp3`                                       | Format of downloaded files ('aac', 'flac', 'mp3', 'm4a', 'opus', 'vorbis', 'wav', 'alac')                                                     |
+ QUALITY              | undefined                                   | Audio quality (0-9 VBR or specific bitrate) of downloaded files                                                                               |
+ PORT                 | 3000                                        | Port of Spooty server                                                                                                                         |
+ REDIS_PORT           | 6379                                        | Port of Redis server                                                                                                                          |
+ REDIS_HOST           | localhost                                   | Host of Redis server                                                                                                                          |
+ RUN_REDIS            | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                     |
+ SPOTIFY_CLIENT_ID    | your_client_id                              | Client ID of your Spotify application (required)                                                                                              |
+ SPOTIFY_CLIENT_SECRET| your_client_secret                          | Client Secret of your Spotify application (required)                                                                                          |
+ YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                |
+ YT_COOKIES           |                                             | Allows you to pass your YouTube cookies to bypass some download restrictions. See [below](#how-to-get-your-youtube-cookies) for instructions. |
 
 ### How to get your YouTube cookies (using browser dev tools):
 1. Go to https://www.youtube.com and log in if needed.
