@@ -30,8 +30,8 @@
     "@ngneat/elf-requests": "^1.9.2",
     "@ngneat/elf-state-history": "^1.4.0",
     "bulma": "^1.0.1",
-    "ngx-socket-io": "^4.7.0",
-    "rxjs": "~7.8.0",
+    "ngx-socket-io": "4.8.1",
+    "rxjs": "7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

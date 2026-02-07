@@ -25,10 +25,7 @@ export class YoutubeService {
     return url;
   }
 
-  async downloadAndFormat(
-    track: TrackEntity,
-    output: string,
-  ): Promise<void> {
+  async downloadAndFormat(track: TrackEntity, output: string): Promise<void> {
     this.logger.debug(
       `Downloading ${track.artist} - ${track.name} (${track.youtubeUrl}) from YT`,
     );
@@ -37,16 +34,16 @@ export class YoutubeService {
       throw Error('youtubeUrl is null or undefined');
     }
     const ytdlp = new YtDlp();
-    await ytdlp.downloadAsync(track.youtubeUrl, {
-      format: {
-        filter: 'audioonly',
-        type: this.configService.get<'m4a'>(EnvironmentEnum.FORMAT),
-        quality: 0,
+    await ytdlp.downloadAudio(
+      track.youtubeUrl,
+      this.configService.get<'m4a'>(EnvironmentEnum.FORMAT),
+      {
+        output,
+        cookiesFromBrowser: this.configService.get<string>('YT_COOKIES'),
+        headers: HEADERS,
+        jsRuntime: 'node',
       },
-      output,
-      cookiesFromBrowser: this.configService.get<string>('YT_COOKIES'),
-      headers: HEADERS,
-    });
+    );
     this.logger.debug(
       `Downloaded ${track.artist} - ${track.name} to ${output}`,
     );

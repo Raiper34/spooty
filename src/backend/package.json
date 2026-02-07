@@ -38,7 +38,7 @@
     "isomorphic-unfetch": "^4.0.2",
     "node-id3": "^0.2.9",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1",
+    "rxjs": "7.8.0",
     "spotify-url-info": "^3.2.18",
     "sqlite3": "^5.1.7",
     "yt-search": "^2.12.1",
