@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.4.1](https://github.com/Raiper34/spooty/compare/2.4.0...2.4.1)
+
+- fix(docker): fix docker node version [`a14f5ea`](https://github.com/Raiper34/spooty/commit/a14f5eab6805acdf4755dbd8f37a289a0d675c12)
+
 #### [2.4.0](https://github.com/Raiper34/spooty/compare/2.3.4...2.4.0)
+
+> 7 February 2026
 
 - feat(files): add possibility to set the audio quality of downloaded files [`#39`](https://github.com/Raiper34/spooty/issues/39)
 - fix(downloading): fix downloading songs from browser with special characters [`#41`](https://github.com/Raiper34/spooty/issues/41)
