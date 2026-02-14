@@ -224,7 +224,9 @@ export class SpotifyApiService {
             allTracks.push(...pageTracks);
           }
 
-          if (pageTracks.length < 100) {
+          // Use raw item count for pagination (pageTracks is filtered and may be < 100
+          // even when more pages exist due to null/deleted tracks)
+          if (data.items.length < 100) {
             hasMoreTracks = false;
           } else {
             offset += 100;
