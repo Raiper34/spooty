@@ -59,7 +59,12 @@ export class PlaylistService {
   }
 
   private async createSingleTrack(playlist: PlaylistEntity): Promise<void> {
-    let trackDetail: { name: string; artist: string; image: string };
+    let trackDetail: {
+      name: string;
+      artist: string;
+      album: string;
+      image: string;
+    };
     let playlist2Save: PlaylistEntity;
     try {
       trackDetail = await this.spotifyService.getTrackDetail(
@@ -87,6 +92,7 @@ export class PlaylistService {
           {
             artist: trackDetail.artist,
             name: trackDetail.name,
+            album: trackDetail.album,
             spotifyUrl: playlist.spotifyUrl,
             coverUrl: trackDetail.image,
           },
@@ -114,7 +120,10 @@ export class PlaylistService {
         name: detail.name,
         coverUrl: detail.image,
       };
-      this.createPlaylistFolderStructure(playlist2Save.name);
+      // Only create playlist folder if using playlist-based structure
+      if (playlist.usePlaylistStructure) {
+        this.createPlaylistFolderStructure(playlist2Save.name);
+      }
     } catch (err) {
       this.logger.error(`Error getting playlist details: ${err}`);
       playlist2Save = { ...playlist, error: String(err) };
@@ -152,6 +161,7 @@ export class PlaylistService {
             {
               artist: track.artist,
               name: track.name,
+              album: track.album || 'Unknown Album',
               spotifyUrl: track.previewUrl || null,
               coverUrl: track.coverUrl || savedPlaylist.coverUrl, // Use track's album art, fallback to playlist cover
             },
@@ -213,9 +223,10 @@ export class PlaylistService {
   @Interval(3_600_000)
   async checkActivePlaylists(): Promise<void> {
     // Only check actual playlists (not individual tracks) that are subscribed
-    const activePlaylists = await this.findAll(
-      { active: true, isTrack: false },
-    );
+    const activePlaylists = await this.findAll({
+      active: true,
+      isTrack: false,
+    });
     for (const playlist of activePlaylists) {
       let tracks = [];
       try {

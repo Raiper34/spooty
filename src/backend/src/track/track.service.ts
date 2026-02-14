@@ -12,6 +12,7 @@ import { UtilsService } from '../shared/utils.service';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { YoutubeService } from '../shared/youtube.service';
+import * as fs from 'fs';
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -110,11 +111,7 @@ export class TrackService {
     if (!(await this.get(track.id))) {
       return;
     }
-    if (
-      !track.name ||
-      !track.artist ||
-      !track.playlist
-    ) {
+    if (!track.name || !track.artist || !track.playlist) {
       this.logger.error(
         `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}`,
       );
@@ -133,7 +130,7 @@ export class TrackService {
     });
     let error: string;
     try {
-      const folderName = this.getFolderName(track, track.playlist);
+      const folderName = this.getFolderName(track);
       await this.youtubeService.downloadAndFormat(track, folderName);
       if (coverUrl) {
         await this.youtubeService.addImage(
@@ -162,19 +159,42 @@ export class TrackService {
     return `${this.utilsService.stripFileIllegalChars(fileName)}.${this.configService.get<string>(EnvironmentEnum.FORMAT)}`;
   }
 
-  getFolderName(track: TrackEntity, playlist: PlaylistEntity): string {
-    // Individual tracks (isTrack=true) go in root downloads folder, playlists in subfolders
-    if (playlist?.isTrack) {
+  getFolderName(track: TrackEntity): string {
+    // Check if playlist wants to use the old playlist-based structure
+    if (track.playlist?.usePlaylistStructure) {
+      // Use old playlist-based structure
+      if (track.playlist?.isTrack) {
+        // Individual tracks go in root downloads folder
+        return resolve(
+          this.utilsService.getRootDownloadsPath(),
+          this.getTrackFileName(track),
+        );
+      }
+      // Playlist tracks go in playlist subfolder
+      const safePlaylistName = track.playlist?.name || 'Unknown Playlist';
       return resolve(
-        this.utilsService.getRootDownloadsPath(),
+        this.utilsService.getPlaylistFolderPath(safePlaylistName),
         this.getTrackFileName(track),
       );
     }
-    
-    const safePlaylistName = playlist?.name || 'unknown_playlist';
-    return resolve(
-      this.utilsService.getPlaylistFolderPath(safePlaylistName),
-      this.getTrackFileName(track),
+
+    // Use new artist/album folder structure (default)
+    const safeArtist = track.artist || 'Unknown Artist';
+    const safeAlbum = track.album || 'Unknown Album';
+
+    // Get the album folder path (artist/album)
+    const albumFolderPath = this.utilsService.getAlbumFolderPath(
+      safeArtist,
+      safeAlbum,
     );
+
+    // Ensure the directory structure exists
+    if (!fs.existsSync(albumFolderPath)) {
+      fs.mkdirSync(albumFolderPath, { recursive: true });
+      this.logger.debug(`Created directory: ${albumFolderPath}`);
+    }
+
+    // Return full path with filename
+    return resolve(albumFolderPath, this.getTrackFileName(track));
   }
 }
