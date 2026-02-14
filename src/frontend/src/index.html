@@ -6,6 +6,167 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  .tag[data-downloading] {
+    position: relative;
+    overflow: hidden;
+    min-width: 72px;
+    text-align: center;
+    z-index: 0;
+    background: #f0f0f0 !important;
+    color: #363636 !important;
+    font-weight: 600;
+    transition: none;
+  }
+  .tag[data-downloading]::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: var(--progress, 0%);
+    background: linear-gradient(90deg, #48c78e, #3ec487);
+    transition: width 0.3s ease;
+    z-index: -1;
+    border-radius: inherit;
+  }
+  .tag[data-downloading].progress-past-half {
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .tag[data-downloading].waiting-for-data::before {
+    width: 100%;
+    background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 30%, #d5d5d5 50%, #e0e0e0 70%, #f0f0f0 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .tag[data-searching] {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>
+<script>
+(function() {
+  var waitForIO = setInterval(function() {
+    if (typeof io === 'undefined') return;
+    clearInterval(waitForIO);
+
+    var socket = io();
+    window.__spooty = { socket: socket, trackMap: {}, tagMap: {} };
+
+    var trackMap = window.__spooty.trackMap;
+    var tagMap = window.__spooty.tagMap;
+
+    function findTagForTrack(trackId) {
+      if (tagMap[trackId] && tagMap[trackId].isConnected) {
+        return tagMap[trackId];
+      }
+      var links = document.querySelectorAll('a[href*="api/track/download/' + trackId + '"]');
+      if (links.length > 0) {
+        var row = links[0].closest('.panel-block');
+        if (row) {
+          var tags = row.querySelectorAll('.tag');
+          if (tags.length > 0) { tagMap[trackId] = tags[tags.length - 1]; return tagMap[trackId]; }
+        }
+      }
+      var info = trackMap[trackId];
+      if (info && info.artist && info.name) {
+        var searchText = info.artist + ' - ' + info.name;
+        var rows = document.querySelectorAll('.panel-block');
+        for (var i = 0; i < rows.length; i++) {
+          if ((rows[i].textContent || '').indexOf(searchText) !== -1) {
+            var tags = rows[i].querySelectorAll('.tag');
+            if (tags.length > 0) { tagMap[trackId] = tags[tags.length - 1]; return tagMap[trackId]; }
+          }
+        }
+      }
+      return null;
+    }
+
+    function applyProgress(tag, pct, trackId) {
+      tag.setAttribute('data-downloading', trackId);
+      tag.removeAttribute('data-searching');
+      tag.classList.remove('waiting-for-data');
+      tag.style.setProperty('--progress', pct + '%');
+      tag.textContent = pct + '%';
+      tag.classList.remove('is-success', 'is-danger', 'is-warning', 'is-info', 'is-primary');
+      if (pct > 50) { tag.classList.add('progress-past-half'); }
+      else { tag.classList.remove('progress-past-half'); }
+      if (pct >= 100) {
+        tag.style.setProperty('--progress', '100%');
+        tag.textContent = 'Done!';
+        tag.classList.add('progress-past-half');
+      }
+    }
+
+    socket.onAny(function(event, data) {
+      if (event === 'trackNew') {
+        if (data && data.track) {
+          trackMap[data.track.id] = { artist: data.track.artist, name: data.track.name };
+        }
+      }
+      else if (event === 'trackUpdate') {
+        if (!data || !data.id) return;
+        if (data.artist && data.name) {
+          trackMap[data.id] = { artist: data.artist, name: data.name };
+        }
+        delete tagMap[data.id];
+
+        if (data.status === 1) {
+          setTimeout(function() {
+            var tag = findTagForTrack(data.id);
+            if (tag) { tag.setAttribute('data-searching', ''); }
+          }, 100);
+        }
+        else if (data.status === 2) {
+          setTimeout(function() {
+            var tag = findTagForTrack(data.id);
+            if (tag) { tag.removeAttribute('data-searching'); }
+          }, 100);
+        }
+        else if (data.status === 3) {
+          setTimeout(function() {
+            var tag = findTagForTrack(data.id);
+            if (tag) {
+              tag.setAttribute('data-downloading', data.id);
+              tag.classList.add('waiting-for-data');
+              tag.style.setProperty('--progress', '0%');
+              tag.textContent = '0%';
+              tag.classList.remove('is-success', 'is-danger', 'is-warning', 'is-info', 'is-primary');
+            }
+          }, 100);
+        }
+        else if (data.status === 4 || data.status === 5) {
+          setTimeout(function() {
+            var tag = findTagForTrack(data.id);
+            if (tag) {
+              tag.removeAttribute('data-downloading');
+              tag.removeAttribute('data-searching');
+              tag.classList.remove('progress-past-half', 'waiting-for-data');
+              tag.style.removeProperty('--progress');
+            }
+          }, 100);
+        }
+      }
+      else if (event === 'trackProgress') {
+        if (!data || !data.id) return;
+        var pct = Math.round(data.percent);
+        setTimeout(function() {
+          var tag = findTagForTrack(data.id);
+          if (tag) { applyProgress(tag, pct, data.id); }
+        }, 50);
+      }
+    });
+  }, 300);
+})();
+</script>
 </head>
 <body>
   <app-root></app-root>

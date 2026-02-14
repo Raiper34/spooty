@@ -3,14 +3,8 @@ import { TrackEntity } from '../track/track.entity';
 import { EnvironmentEnum } from '../environmentEnum';
 import { TrackService } from '../track/track.service';
 import { ConfigService } from '@nestjs/config';
-import { YtDlp } from 'ytdlp-nodejs';
-import * as yts from 'yt-search';
+import { exec, spawn } from 'child_process';
 const NodeID3 = require('node-id3');
-
-const HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-};
 
 @Injectable()
 export class YoutubeService {
@@ -19,13 +13,46 @@ export class YoutubeService {
   constructor(private readonly configService: ConfigService) {}
 
   async findOnYoutubeOne(artist: string, name: string): Promise<string> {
-    this.logger.debug(`Searching ${artist} - ${name} on YT`);
-    const url = (await yts(`${artist} - ${name}`)).videos[0].url;
+    this.logger.debug(`Searching ${artist} - ${name} on YouTube Music`);
+    const query = `${artist} ${name}`.replace(/"/g, '').replace(/&/g, '');
+    const encodedQuery = encodeURIComponent(query);
+    const ytDlpBin = require('ytdlp-nodejs').YtDlp.defaultOptions?.binaryPath
+      || require('path').resolve(require.resolve('ytdlp-nodejs'), '..', '..', 'bin', 'yt-dlp');
+
+    // Try YouTube Music first (studio recordings)
+    const ytMusicCmd = `"${ytDlpBin}" "https://music.youtube.com/search?q=${encodedQuery}" --print webpage_url --playlist-items 1 --cookies /spooty/cookies.txt --no-warnings 2>/dev/null`;
+
+    let url = await new Promise<string | null>((resolve) => {
+      exec(ytMusicCmd, { timeout: 30000 }, (err, stdout) => {
+        if (err || !stdout.toString().trim()) return resolve(null);
+        resolve(stdout.toString().trim().split('\n')[0]);
+      });
+    });
+
+    // Fallback to regular YouTube search
+    if (!url) {
+      this.logger.debug(
+        `Not found on YouTube Music, falling back to YouTube for ${artist} - ${name}`,
+      );
+      const ytCmd = `"${ytDlpBin}" "ytsearch1:${query}" --print webpage_url --no-playlist 2>/dev/null`;
+      url = await new Promise<string | null>((resolve, reject) => {
+        exec(ytCmd, { timeout: 30000 }, (err, stdout) => {
+          if (err) return reject(err);
+          resolve(stdout.toString().trim());
+        });
+      });
+    }
+
+    if (!url) throw new Error('No result found on YouTube Music or YouTube');
     this.logger.debug(`Found ${artist} - ${name} on ${url}`);
     return url;
   }
 
-  async downloadAndFormat(track: TrackEntity, output: string): Promise<void> {
+  async downloadAndFormat(
+    track: TrackEntity,
+    output: string,
+    onProgress?: (progress: { percentage: number }) => void,
+  ): Promise<void> {
     this.logger.debug(
       `Downloading ${track.artist} - ${track.name} (${track.youtubeUrl}) from YT`,
     );
@@ -33,18 +60,51 @@ export class YoutubeService {
       this.logger.error('youtubeUrl is null or undefined');
       throw Error('youtubeUrl is null or undefined');
     }
-    const ytdlp = new YtDlp();
-    await ytdlp.downloadAudio(
-      track.youtubeUrl,
-      this.configService.get<'m4a'>(EnvironmentEnum.FORMAT),
-      {
-        output,
-        cookiesFromBrowser: this.configService.get<string>('YT_COOKIES'),
-        headers: HEADERS,
-        jsRuntime: 'node',
-        audioQuality: this.configService.get<string>('QUALITY'),
-      },
-    );
+    const ytDlpBin = require('ytdlp-nodejs').YtDlp.defaultOptions?.binaryPath
+      || require('path').resolve(require.resolve('ytdlp-nodejs'), '..', '..', 'bin', 'yt-dlp');
+    const format = this.configService.get<string>(EnvironmentEnum.FORMAT) || 'mp3';
+    const quality = this.configService.get<string>('QUALITY');
+    const args = [
+      '--js-runtime', 'node',
+      '-o', output,
+      '--cookies', '/spooty/cookies.txt',
+      '--extract-audio',
+      '--audio-format', format,
+      '--progress',
+      '--newline',
+      '--progress-template', '%(progress._percent_str)s',
+      '--no-warnings',
+      '--audio-quality', quality || '0',
+      '--', track.youtubeUrl,
+    ];
+
+    await new Promise<void>((resolve, reject) => {
+      const proc = spawn(ytDlpBin, args);
+      let stderr = '';
+      proc.stdout.on('data', (chunk: Buffer) => {
+        const lines = chunk.toString().split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed && onProgress) {
+            const pct = parseFloat(trimmed);
+            if (!isNaN(pct)) {
+              onProgress({ percentage: pct });
+            }
+          }
+        }
+      });
+      proc.stderr.on('data', (chunk: Buffer) => {
+        stderr += chunk.toString();
+      });
+      proc.on('error', reject);
+      proc.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`yt-dlp exited with code ${code}: ${stderr.trim()}`));
+        } else {
+          resolve();
+        }
+      });
+    });
     this.logger.debug(
       `Downloaded ${track.artist} - ${track.name} to ${output}`,
     );
