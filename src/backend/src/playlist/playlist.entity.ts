@@ -21,6 +21,9 @@ export class PlaylistEntity {
   @Column({ default: false })
   isTrack?: boolean; // True for individual tracks, false for actual playlists
 
+  @Column({ default: true })
+  usePlaylistStructure?: boolean; // True to use old playlist-based structure, false for artist/album
+
   @Column({ default: () => Date.now() })
   createdAt?: number;
 

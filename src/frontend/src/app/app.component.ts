@@ -16,6 +16,7 @@ import {map} from "rxjs";
 export class AppComponent {
 
   url = ''
+  usePlaylistStructure = true;
   createLoading$ = this.playlistService.createLoading$;
   playlists$ = this.playlistService.all$.pipe(map(items => items.filter(item => !item.isTrack)));
   songs$ = this.playlistService.all$.pipe(map(items => items.filter(item => item.isTrack)));
@@ -33,7 +34,7 @@ export class AppComponent {
   }
 
   download(): void {
-    this.url && this.playlistService.create(this.url);
+    this.url && this.playlistService.create(this.url, this.usePlaylistStructure);
     this.url = '';
   }
 
