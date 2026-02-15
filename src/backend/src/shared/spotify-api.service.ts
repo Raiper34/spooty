@@ -7,8 +7,6 @@ const { getDetails } = require('spotify-url-info')(fetch);
 @Injectable()
 export class SpotifyApiService {
   private readonly logger = new Logger(SpotifyApiService.name);
-  private accessToken: string | null = null;
-  private tokenExpiry: number = 0;
   private embedToken: string | null = null;
   private embedTokenExpiry: number = 0;
 
@@ -59,7 +57,7 @@ export class SpotifyApiService {
     try {
       this.logger.debug(`Getting track metadata for ${spotifyUrl}`);
       const trackId = this.getTrackId(spotifyUrl);
-      const accessToken = await this.getAccessToken();
+      const accessToken = await this.getEmbedToken('track', trackId);
 
       const response = await fetch(
         `https://api.spotify.com/v1/tracks/${trackId}`,
@@ -104,61 +102,17 @@ export class SpotifyApiService {
     }
   }
 
-  private async getAccessToken(): Promise<string> {
-    if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return this.accessToken;
-    }
-
-    try {
-      this.logger.debug('Getting new Spotify access token');
-
-      const clientId = process.env.SPOTIFY_CLIENT_ID;
-      const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-
-      if (!clientId || !clientSecret) {
-        throw new Error(
-          'Missing Spotify credentials. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .env file',
-        );
-      }
-
-      const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
-        'base64',
-      );
-
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Failed to get access token: ${errorData}`);
-      }
-
-      const data = await response.json();
-      this.accessToken = data.access_token;
-      this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
-
-      this.logger.debug('Successfully obtained Spotify access token');
-      return this.accessToken;
-    } catch (error) {
-      this.logger.error(`Error getting Spotify access token: ${error.message}`);
-      throw error;
-    }
-  }
-
-  private async getEmbedToken(playlistId: string): Promise<string> {
+  private async getEmbedToken(
+    type: string = 'track',
+    id: string = '4uLU6hMCjMI75M1A2tKUQC',
+  ): Promise<string> {
     if (this.embedToken && Date.now() < this.embedTokenExpiry) {
       return this.embedToken;
     }
 
     this.logger.debug('Getting anonymous embed token from Spotify');
     const embedRes = await fetch(
-      `https://open.spotify.com/embed/playlist/${playlistId}`,
+      `https://open.spotify.com/embed/${type}/${id}`,
     );
     if (!embedRes.ok) {
       throw new Error(`Failed to fetch embed page: ${embedRes.status}`);
@@ -234,7 +188,7 @@ export class SpotifyApiService {
       // Phase 2: Use embed token for paginated API access
       let accessToken: string;
       try {
-        accessToken = await this.getEmbedToken(playlistId);
+        accessToken = await this.getEmbedToken('playlist', playlistId);
       } catch (e) {
         this.logger.warn(
           `Failed to get embed token: ${e.message}, falling back to embed data`,
@@ -281,7 +235,7 @@ export class SpotifyApiService {
             this.embedToken = null;
             this.embedTokenExpiry = 0;
             try {
-              accessToken = await this.getEmbedToken(playlistId);
+              accessToken = await this.getEmbedToken('playlist', playlistId);
             } catch (e) {
               this.logger.warn(`Failed to refresh embed token: ${e.message}`);
             }
@@ -295,7 +249,7 @@ export class SpotifyApiService {
             this.embedToken = null;
             this.embedTokenExpiry = 0;
             try {
-              accessToken = await this.getEmbedToken(playlistId);
+              accessToken = await this.getEmbedToken('playlist', playlistId);
             } catch (e) {
               this.logger.warn(`Failed to refresh embed token: ${e.message}`);
               break;
