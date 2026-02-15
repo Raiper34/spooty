@@ -58,7 +58,7 @@ export class TrackService {
   async create(track: TrackEntity, playlist?: PlaylistEntity): Promise<void> {
     const savedTrack = await this.repository.save({ ...track, playlist });
     await this.trackSearchQueue.add('', savedTrack, {
-      jobId: `id-${savedTrack.id}`,
+      jobId: `id-${savedTrack.id}-${Date.now()}`,
     });
     this.io.emit(WsTrackOperation.New, {
       track: savedTrack,
@@ -73,7 +73,7 @@ export class TrackService {
 
   async retry(id: number): Promise<void> {
     const track = await this.get(id);
-    await this.trackSearchQueue.add('', track, { jobId: `id-${id}` });
+    await this.trackSearchQueue.add('', track, { jobId: `id-${id}-${Date.now()}` });
     await this.update(id, { ...track, status: TrackStatusEnum.New });
   }
 
@@ -100,13 +100,16 @@ export class TrackService {
         status: TrackStatusEnum.Error,
       };
     }
-    await this.trackDownloadQueue.add('', updatedTrack, {
-      jobId: `id-${updatedTrack.id}`,
-    });
     await this.update(track.id, updatedTrack);
+    if (updatedTrack.status !== TrackStatusEnum.Error) {
+      await this.trackDownloadQueue.add('', updatedTrack, {
+        jobId: `id-${updatedTrack.id}-${Date.now()}`,
+      });
+    }
   }
 
-  async downloadFromYoutube(track: TrackEntity): Promise<void> {
+  async downloadFromYoutube(track: TrackEntity, retryCount = 0): Promise<void> {
+    const MAX_RETRIES = 3;
     if (!(await this.get(track.id))) {
       return;
     }
@@ -134,7 +137,14 @@ export class TrackService {
     let error: string;
     try {
       const folderName = this.getFolderName(track, track.playlist);
-      await this.youtubeService.downloadAndFormat(track, folderName);
+      await this.youtubeService.downloadAndFormat(track, folderName, (progress) => {
+        if (progress && progress.percentage !== undefined) {
+          this.io.emit('trackProgress', {
+            id: track.id,
+            percent: Math.round(progress.percentage),
+          });
+        }
+      });
       if (coverUrl) {
         await this.youtubeService.addImage(
           folderName,
@@ -146,6 +156,27 @@ export class TrackService {
     } catch (err) {
       this.logger.error(err);
       error = String(err);
+    }
+    // Auto-retry on rate limit errors
+    const isRateLimit = error && (
+      error.includes('429') ||
+      error.includes('Too Many Requests') ||
+      error.includes('rate') ||
+      error.includes('Sign in to confirm') ||
+      error.includes('HTTP Error 403')
+    );
+    if (isRateLimit && retryCount < MAX_RETRIES) {
+      const backoff = (retryCount + 1) * 30000; // 30s, 60s, 90s
+      this.logger.warn(
+        `Rate limited on ${track.artist} - ${track.name}, retrying in ${backoff / 1000}s (attempt ${retryCount + 1}/${MAX_RETRIES})`,
+      );
+      await this.update(track.id, {
+        ...track,
+        status: TrackStatusEnum.Queued,
+        error: `Rate limited, retrying in ${backoff / 1000}s...`,
+      } as TrackEntity);
+      await new Promise((r) => setTimeout(r, backoff));
+      return this.downloadFromYoutube(track, retryCount + 1);
     }
     const updatedTrack = {
       ...track,
