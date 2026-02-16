@@ -1,36 +1,42 @@
 <article class="panel" [ngClass]="statusClass$ | async">
   <p class="panel-heading is-flex is-justify-content-space-between">
-        <span>
-          <i class="is-clickable fa-solid"
-             [ngClass]="playlist.collapsed ? 'fa-caret-up' : 'fa-caret-down'"
-             (click)="toggleCollapse(playlist.id)"
-          ></i>&nbsp;
-          <span *ngIf="playlist.error; else noErrorTemplate" class="is-size-6 has-text-weight-medium">{{playlist.error}}</span>
-          <ng-template #noErrorTemplate>
-            <span class="is-size-6 has-text-weight-semibold">{{playlist.name}}</span>
-          </ng-template>&nbsp;
-          <a [href]="playlist.spotifyUrl"
-             target="_blank"
-             class="has-text-black" title="Link to Spotify url to be download from">
-            <i class="fa-brands fa-spotify"></i>
-          </a>
-        </span>
     <span>
-      <ng-container *ngIf="!playlist.isTrack">
+      <i class="is-clickable fa-solid"
+        [ngClass]="playlist.collapsed ? 'fa-caret-up' : 'fa-caret-down'"
+        (click)="toggleCollapse(playlist.id)"
+      ></i>&nbsp;
+      @if (playlist.error) {
+        <span class="is-size-6 has-text-weight-medium">{{playlist.error}}</span>
+      } @else {
+        <span class="is-size-6 has-text-weight-semibold">{{playlist.name}}</span>
+      }
+      &nbsp;
+      <a [href]="playlist.spotifyUrl"
+        target="_blank"
+        class="has-text-black" title="Link to Spotify url to be download from">
+        <i class="fa-brands fa-spotify"></i>
+      </a>
+    </span>
+    <span>
+      @if (!playlist.isTrack) {
         <i class="fa-solid is-clickable hover-icon"
-           [ngClass]="playlist.active ? 'fa-toggle-on' : 'fa-toggle-off'"
-           [title]="playlist.active ? '[ON]: Unsubscribe from playlist changes?' : '[OFF]: Subscribe to playlist changes?'"
-           (click)="toggleActive(playlist.id, playlist.active)"
+          [ngClass]="playlist.active ? 'fa-toggle-on' : 'fa-toggle-off'"
+          [title]="playlist.active ? '[ON]: Unsubscribe from playlist changes?' : '[OFF]: Subscribe to playlist changes?'"
+          (click)="toggleActive(playlist.id, playlist.active)"
         ></i>
         <i>&nbsp;</i>
-      </ng-container>
+      }
       <i class="fa-solid fa-repeat is-clickable hover-icon" title="Retry download failed tracks" (click)="retryFailed(playlist.id)"></i>&nbsp;
       <i class="fa-solid fa-xmark is-clickable hover-icon" title="Remove playlist from list" (click)="delete(playlist.id)"></i>&nbsp;
-      <i *ngIf="playlist.active" class="fa-solid fa-toggle-on hover-icon-reversed"></i>&nbsp;
-      <span *ngIf="!playlist.error" class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>&nbsp;
-    </span>
-  </p>
-  <ng-container *ngIf="playlist.collapsed">
-    <app-track-list [playlistId]="playlist.id"></app-track-list>
-  </ng-container>
-</article>
+      @if (playlist.active) {
+        <i class="fa-solid fa-toggle-on hover-icon-reversed"></i>
+        }&nbsp;
+        @if (!playlist.error) {
+          <span class="is-size-6 has-text-weight-medium">{{trackCompletedCount$ | async}}/{{trackCount$ | async}}</span>
+          }&nbsp;
+        </span>
+      </p>
+      @if (playlist.collapsed) {
+        <app-track-list [playlistId]="playlist.id"></app-track-list>
+      }
+    </article>

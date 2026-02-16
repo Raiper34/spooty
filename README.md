@@ -19,6 +19,7 @@ The project is based on NestJS and Angular.
 ### Content
 - [🚀 Installation](#-installation)
   - [Spotify App Configuration](#spotify-app-configuration)
+  - [Authentication & Default Admin User](#authentication--default-admin-user)
   - [Docker](#docker)
     - [Docker command](#docker-command)
     - [Docker compose](#docker-compose)
@@ -26,8 +27,8 @@ The project is based on NestJS and Angular.
     - [Process](#requirements)
     - [Requirements](#process)
   - [Environment variables](#environment-variables)
+- [📚 Documentation](#-documentation)
 - [⚖️ License](#-license)
-
 ## 🚀 Installation
 Recommended and the easiest way how to start to use of Spooty is using docker.
 
@@ -43,6 +44,39 @@ To fully use Spooty, you need to create an application in the Spotify Developer 
 
 These credentials will be used by Spooty to access the Spotify API.
 
+### Authentication & Default Admin User
+
+Spooty includes a multi-user authentication system. Upon first start, a default admin user is automatically created.
+
+**Default Credentials:**
+- **Username:** `admin`
+- **Password:** `admin`
+
+> [!WARNING]
+> **CHANGE THE DEFAULT PASSWORD IMMEDIATELY IN PRODUCTION!**
+> 
+> The default password is insecure and should only be used for initial setup and testing.
+
+**Changing the Admin Password:**
+
+1. **Using Environment Variables (Recommended for Docker):**
+   ```shell
+   docker run -d -p 3000:3000 \
+     -e ADMIN_USERNAME=admin \
+     -e ADMIN_PASSWORD='$apr1$newHash$...' \
+     raiper34/spooty:latest
+   ```
+   
+2. **Generate Password Hash:**
+   - Use the included script: `node src/backend/generate-password.js yourpassword`
+   - Or use online tool: [htpasswd generator](https://hostingcanada.org/htpasswd-generator/) (select MD5 Apache specific)
+
+3. **After Login:**
+   - Login with the default credentials
+   - Navigate to the Admin panel (admin users only)
+   - Create additional users or change your password
+   - Each user gets their own download folder: `downloads/username/`
+
 ### Docker
 
 Just run docker command or use docker compose configuration.
@@ -54,8 +88,12 @@ docker run -d -p 3000:3000 \
   -v /path/to/downloads:/spooty/backend/downloads \
   -e SPOTIFY_CLIENT_ID=your_client_id \
   -e SPOTIFY_CLIENT_SECRET=your_client_secret \
+  -e JWT_SECRET=your-random-secret-key \
+  -e ADMIN_USERNAME=admin \
+  -e ADMIN_PASSWORD='$apr1$your$hash' \
   raiper34/spooty:latest
 ```
+> **Note:** If `ADMIN_USERNAME` and `ADMIN_PASSWORD` are not set, the default credentials (admin/admin) will be used.
 
 #### Docker compose
 ```yaml
@@ -71,8 +109,12 @@ services:
     environment:
       - SPOTIFY_CLIENT_ID=your_client_id
       - SPOTIFY_CLIENT_SECRET=your_client_secret
+      - JWT_SECRET=your-random-secret-key
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=$apr1$your$hash
       # Configure other environment variables if needed
 ```
+> **Note:** If `ADMIN_USERNAME` and `ADMIN_PASSWORD` are not set, the default credentials (admin/admin) will be used.
 
 ### Build from source
 
@@ -112,6 +154,9 @@ Some behaviour and settings of Spooty can be configured using environment variab
  REDIS_PORT           | 6379                                        | Port of Redis server                                                                                                                          |
  REDIS_HOST           | localhost                                   | Host of Redis server                                                                                                                          |
  RUN_REDIS            | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                     |
+ JWT_SECRET           | `spooty-secret-key-change-in-production`    | Secret key for JWT token signing (CHANGE IN PRODUCTION!)                                                                                     |
+ ADMIN_USERNAME       | `admin`                                     | Username for the default admin user created on first start                                                                                    |
+ ADMIN_PASSWORD       | `$apr1$uBmP/B6m$...` (hash for "admin")     | Password hash for admin user (Apache MD5 format). Generate with `node generate-password.js` or htpasswd generator                            |
  SPOTIFY_CLIENT_ID    | your_client_id                              | Client ID of your Spotify application (required)                                                                                              |
  SPOTIFY_CLIENT_SECRET| your_client_secret                          | Client Secret of your Spotify application (required)                                                                                          |
  YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                |
@@ -125,6 +170,10 @@ Some behaviour and settings of Spooty can be configured using environment variab
 5. Copy all the cookies (name=value) and join them with a semicolon and a space, like:
    VISITOR_INFO1_LIVE=xxxx; YSC=xxxx; SID=xxxx; ...
 6. Paste this string into the YT_COOKIES environment variable (in your .env or Docker config).
+
+## 📚 Documentation
+
+- [Folder Structure Guide](docs/FOLDER_STRUCTURE_GUIDE.md) - Learn how to organize your music downloads by playlist or by artist/album structure
 
 # ⚖️ License
 [MIT](https://choosealicense.com/licenses/mit/)

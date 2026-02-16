@@ -1,7 +1,10 @@
 FROM node:20.20.0-alpine AS builder
 WORKDIR /spooty
-COPY . .
+COPY package*.json .npmrc ./
+COPY src/backend/package*.json ./src/backend/
+COPY src/frontend/package*.json ./src/frontend/
 RUN npm ci
+COPY . .
 RUN npm run build
 
 FROM node:20.20.0-alpine

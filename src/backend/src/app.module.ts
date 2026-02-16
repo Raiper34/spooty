@@ -11,6 +11,8 @@ import { PlaylistEntity } from './playlist/playlist.entity';
 import { resolve } from 'path';
 import { EnvironmentEnum } from './environmentEnum';
 import { BullModule } from '@nestjs/bullmq';
+import { UserEntity } from './auth/user.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,11 +26,12 @@ import { BullModule } from '@nestjs/bullmq';
           __dirname,
           configService.get<string>(EnvironmentEnum.DB_PATH),
         ),
-        entities: [TrackEntity, PlaylistEntity],
+        entities: [TrackEntity, PlaylistEntity, UserEntity],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => [
@@ -37,7 +40,7 @@ import { BullModule } from '@nestjs/bullmq';
             __dirname,
             configService.get<string>(EnvironmentEnum.FE_PATH),
           ),
-          exclude: ['/api/(.*)'],
+          exclude: ['/api{/*path}'],
         },
       ],
       inject: [ConfigService],

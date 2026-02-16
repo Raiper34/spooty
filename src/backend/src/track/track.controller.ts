@@ -32,7 +32,7 @@ export class TrackController {
     const track = await this.service.get(id);
     const fileName = this.service.getTrackFileName(track);
     const readStream = createReadStream(
-      this.service.getFolderName(track, track.playlist),
+      this.service.getFolderName(track),
     );
     res.set({
       'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}`,
