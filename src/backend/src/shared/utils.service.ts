@@ -7,18 +7,39 @@ import { EnvironmentEnum } from '../environmentEnum';
 export class UtilsService {
   constructor(private readonly configService: ConfigService) {}
 
-  getRootDownloadsPath(): string {
-    return resolve(
+  getRootDownloadsPath(username?: string): string {
+    const basePath = resolve(
       __dirname,
       '..',
       this.configService.get<string>(EnvironmentEnum.DOWNLOADS_PATH),
     );
+
+    // If username is provided, create user-specific folder
+    if (username) {
+      return resolve(basePath, this.stripFileIllegalChars(username));
+    }
+
+    return basePath;
   }
 
-  getPlaylistFolderPath(name: string): string {
+  getPlaylistFolderPath(name: string, username?: string): string {
     return resolve(
-      this.getRootDownloadsPath(),
+      this.getRootDownloadsPath(username),
       this.stripFileIllegalChars(name),
+    );
+  }
+
+  getArtistFolderPath(artistName: string, username?: string): string {
+    return resolve(
+      this.getRootDownloadsPath(username),
+      this.stripFileIllegalChars(artistName),
+    );
+  }
+
+  getAlbumFolderPath(artistName: string, albumName: string, username?: string): string {
+    return resolve(
+      this.getArtistFolderPath(artistName, username),
+      this.stripFileIllegalChars(albumName),
     );
   }
 

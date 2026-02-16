@@ -12,6 +12,9 @@ export class PlaylistEntity {
   @Column()
   spotifyUrl: string;
 
+  @Column()
+  username: string; // Username of the owner
+
   @Column({ nullable: true })
   error?: string;
 
@@ -20,6 +23,9 @@ export class PlaylistEntity {
 
   @Column({ default: false })
   isTrack?: boolean; // True for individual tracks, false for actual playlists
+
+  @Column({ default: true })
+  usePlaylistStructure?: boolean; // True for playlist-based structure, false for artist/album structure
 
   @Column({ default: () => Date.now() })
   createdAt?: number;

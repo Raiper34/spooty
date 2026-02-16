@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {AsyncPipe, CommonModule, NgIf} from "@angular/common";
+import { AsyncPipe, CommonModule } from "@angular/common";
 import {TrackListComponent} from "../track-list/track-list.component";
 import {PlaylistService, PlaylistStatusEnum, PlaylistUi} from "../../services/playlist.service";
 import {Observable, map} from "rxjs";
@@ -16,11 +16,10 @@ const STATUS2CLASS = {
 @Component({
     selector: 'app-playlist-box',
     imports: [
-        CommonModule,
-        AsyncPipe,
-        NgIf,
-        TrackListComponent
-    ],
+    CommonModule,
+    AsyncPipe,
+    TrackListComponent
+],
     templateUrl: './playlist-box.component.html',
     styleUrl: './playlist-box.component.scss',
   standalone: true

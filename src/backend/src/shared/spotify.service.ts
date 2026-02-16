@@ -18,7 +18,7 @@ export class SpotifyService {
 
   async getTrackDetail(
     spotifyUrl: string,
-  ): Promise<{ name: string; artist: string; image: string }> {
+  ): Promise<{ name: string; artist: string; album: string; image: string }> {
     this.logger.debug(`Get track ${spotifyUrl} on Spotify`);
     try {
       return await this.spotifyApiService.getTrackMetadata(spotifyUrl);
@@ -28,6 +28,7 @@ export class SpotifyService {
       return {
         name: detail.preview.title,
         artist: detail.preview.artist || 'Unknown Artist',
+        album: 'Unknown Album',
         image: detail.preview.image,
       };
     }

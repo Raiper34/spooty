@@ -1,0 +1,86 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+.next/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Test files
+test/
+tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+coverage/
+.nyc_output/
+
+# Environment files
+.env.local
+.env.*.local
+*.env
+!.env.docker
+
+# Logs
+logs/
+*.log
+
+# OS files
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Downloads folder (backend specific)
+src/backend/downloads/
+
+# Database files
+*.sqlite
+*.db
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Development files
+.prettierrc
+.eslintrc*
+.editorconfig
+jest.config.js
+
+

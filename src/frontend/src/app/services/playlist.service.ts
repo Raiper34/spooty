@@ -123,8 +123,8 @@ export class PlaylistService {
     ).subscribe();
   }
 
-  create(spotifyUrl: string): void {
-    this.http.post(ENDPOINT, {spotifyUrl}).pipe(
+  create(spotifyUrl: string, usePlaylistStructure: boolean = true): void {
+    this.http.post(ENDPOINT, {spotifyUrl, usePlaylistStructure}).pipe(
       trackRequestResult([CREATE_LOADING], { skipCache: true })
     ).subscribe();
   }

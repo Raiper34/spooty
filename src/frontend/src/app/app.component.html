@@ -1,11 +1,25 @@
 <section class="hero is-primary">
   <div class="hero-body">
-    <p class="title">
-      <i class="fa-brands fa-spotify"></i>
-      <span>Spooty</span>
-      <span class="tag is-dark is-size-7">v{{version}}</span>
-    </p>
-    <p class="subtitle">Self-hosted spotify downloader</p>
+    <div class="is-flex is-justify-content-space-between is-align-items-center">
+      <div>
+        <p class="title">
+          <i class="fa-brands fa-spotify"></i>
+          <span>Spooty</span>
+          <span class="tag is-dark is-size-7">v{{version}}</span>
+        </p>
+        <p class="subtitle">Self-hosted spotify downloader</p>
+      </div>
+      @if (currentUser) {
+        <div class="is-flex is-align-items-center">
+          <span class="mr-3 has-text-weight-semibold">
+            <i class="fas fa-user mr-1"></i> {{ currentUser.username }}
+          </span>
+          <button class="button is-light is-small" (click)="logout()">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </button>
+        </div>
+      }
+    </div>
   </div>
 </section>
 
@@ -22,6 +36,12 @@
         >
           <i class="fa-solid fa-download"></i> Download
         </button>
+      </div>
+      <div class="field mt-3">
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="usePlaylistStructure">
+          Use playlist-based folder structure (default: organize by Artist/Album)
+        </label>
       </div>
     </div>
     <hr>

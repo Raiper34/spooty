@@ -5,5 +5,6 @@ export interface Playlist {
   error?: string;
   active: boolean;
   isTrack?: boolean;
+  usePlaylistStructure?: boolean;
   createdAt: number;
 }

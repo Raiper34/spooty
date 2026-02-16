@@ -1,0 +1,120 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>User Management</h1>
+    <button class="btn-back" (click)="goBack()">← Back to Home</button>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+    <button class="btn-close" (click)="error = null">×</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" (click)="toggleCreateForm()" [disabled]="loading">
+      {{ showCreateForm ? 'Cancel' : '+ Add New User' }}
+    </button>
+  </div>
+
+  <!-- Create User Form -->
+  <div class="create-form" *ngIf="showCreateForm">
+    <h2>Create New User</h2>
+    <form (submit)="createUser(); $event.preventDefault()">
+      <div class="form-group">
+        <label for="new-username">Username</label>
+        <input
+          id="new-username"
+          type="text"
+          [(ngModel)]="newUser.username"
+          name="username"
+          placeholder="Enter username"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="new-password">Password</label>
+        <input
+          id="new-password"
+          type="password"
+          [(ngModel)]="newUser.password"
+          name="password"
+          placeholder="Enter password (min 6 characters)"
+          required
+        />
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          Create User
+        </button>
+        <button type="button" class="btn-secondary" (click)="toggleCreateForm()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Users List -->
+  <div class="users-list">
+    <div class="loading" *ngIf="loading && users.length === 0">
+      Loading users...
+    </div>
+
+    <div class="no-users" *ngIf="!loading && users.length === 0">
+      No users found. Create your first user!
+    </div>
+
+    <table class="users-table" *ngIf="users.length > 0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <ng-container *ngIf="editingUserId !== user.id">
+            <td>{{ user.username }}</td>
+            <td>{{ formatDate(user.createdAt) }}</td>
+            <td class="actions-cell">
+              <button class="btn-edit" (click)="startEdit(user)" [disabled]="loading">
+                Edit
+              </button>
+              <button class="btn-delete" (click)="deleteUser(user.id, user.username)" [disabled]="loading">
+                Delete
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Edit Mode -->
+          <ng-container *ngIf="editingUserId === user.id">
+            <td>
+              <input
+                type="text"
+                [(ngModel)]="editUser.username"
+                placeholder="Username"
+                class="edit-input"
+              />
+            </td>
+            <td>
+              <input
+                type="password"
+                [(ngModel)]="editUser.password"
+                placeholder="New password (optional)"
+                class="edit-input"
+              />
+            </td>
+            <td class="actions-cell">
+              <button class="btn-save" (click)="saveUser(user.id)" [disabled]="loading">
+                Save
+              </button>
+              <button class="btn-cancel" (click)="cancelEdit()" [disabled]="loading">
+                Cancel
+              </button>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

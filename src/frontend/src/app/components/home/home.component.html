@@ -1,0 +1,102 @@
+<section class="hero is-primary">
+  <div class="hero-body">
+    <div class="is-flex is-justify-content-space-between is-align-items-center">
+      <div>
+        <p class="title">
+          <i class="fa-brands fa-spotify"></i>
+          <span>Spooty</span>
+          <span class="tag is-dark is-size-7">v{{version}}</span>
+        </p>
+        <p class="subtitle">Self-hosted spotify downloader</p>
+      </div>
+      @if (currentUser) {
+        <div class="is-flex is-align-items-center">
+          <span class="mr-3 has-text-weight-semibold">
+            <i class="fas fa-user mr-1"></i> {{ currentUser.username }}
+            @if (currentUser.isAdmin) {
+              <span class="tag is-warning is-light ml-1">Admin</span>
+            }
+          </span>
+          @if (currentUser.isAdmin) {
+            <button class="button is-warning is-small mr-2" (click)="goToAdmin()">
+              <i class="fas fa-users-cog mr-1"></i> Manage Users
+            </button>
+          }
+          <button class="button is-light is-small" (click)="logout()">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="box">
+      <p class="subtitle">Download</p>
+      <div class="is-flex">
+        <input class="input" type="text" [(ngModel)]="url" placeholder="Paste playlist/song/artist url"/>
+        <button class="button is-primary"
+          [class.is-loading]="(createLoading$ | async)?.isLoading"
+          (click)="download()"
+          [disabled]="!url"
+          >
+          <i class="fa-solid fa-download"></i> Download
+        </button>
+      </div>
+      <div class="field mt-3">
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="usePlaylistStructure">
+          Use playlist-based folder structure (uncheck to organize by Artist/Album)
+        </label>
+      </div>
+    </div>
+    <hr>
+      <div class="box">
+        <div class="is-flex is-justify-content-space-between">
+          <p class="subtitle">Playlists</p>
+          <div class="buttons has-addons">
+            <button class="button is-outlined is-success" title="Remove completed from list" (click)="deleteCompleted()">
+              <i class="fa-solid fa-check"></i>
+            </button>
+            <button class="button is-outlined is-danger" title="Remove failed from list" (click)="deleteFailed()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        @if (playlists$ | async; as playlists) {
+          @for (playlist of playlists; track playlist) {
+            <app-playlist-box [playlist]="playlist"></app-playlist-box>
+          }
+          @if (playlists?.length === 0) {
+            <p class="has-text-grey has-text-centered">No playlists</p>
+          }
+        }
+      </div>
+      <hr>
+        <div class="box">
+          <div class="is-flex is-justify-content-space-between">
+            <p class="subtitle">Songs</p>
+            <div class="buttons has-addons">
+              <button class="button is-outlined is-success" title="Remove completed from list" (click)="deleteCompleted()">
+                <i class="fa-solid fa-check"></i>
+              </button>
+              <button class="button is-outlined is-danger" title="Remove failed from list" (click)="deleteFailed()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+          @if (songs$ | async; as songs) {
+            @for (playlist of songs; track playlist) {
+              <app-playlist-box [playlist]="playlist"></app-playlist-box>
+            }
+            @if (songs?.length === 0) {
+              <p class="has-text-grey has-text-centered">No songs</p>
+            }
+          }
+        </div>
+      </div>
+    </section>
+
+
