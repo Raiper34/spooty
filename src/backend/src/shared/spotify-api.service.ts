@@ -224,7 +224,7 @@ export class SpotifyApiService {
             allTracks.push(...pageTracks);
           }
 
-          if (pageTracks.length < 100) {
+          if (!data.next) {
             hasMoreTracks = false;
           } else {
             offset += 100;
