@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [2.4.2](https://github.com/Raiper34/spooty/compare/2.4.1...2.4.2)
+
+- fix(spotify): use data.next for playlist pagination instead of filtered track count [`#52`](https://github.com/Raiper34/spooty/issues/52) [`#35`](https://github.com/Raiper34/spooty/issues/35)
+
 #### [2.4.1](https://github.com/Raiper34/spooty/compare/2.4.0...2.4.1)
+
+> 7 February 2026
 
 - fix(docker): fix docker node version [`a14f5ea`](https://github.com/Raiper34/spooty/commit/a14f5eab6805acdf4755dbd8f37a289a0d675c12)
 
