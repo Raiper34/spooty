@@ -16,6 +16,11 @@ import {map} from "rxjs";
 export class AppComponent {
 
   url = ''
+  private readonly spotifyUrlPattern = /^https:\/\/open\.spotify\.com\/(track|playlist|album|artist)\/[a-zA-Z0-9]+/;
+
+  get isValidSpotifyUrl(): boolean {
+    return this.spotifyUrlPattern.test(this.url);
+  }
   createLoading$ = this.playlistService.createLoading$;
   playlists$ = this.playlistService.all$.pipe(map(items => items.filter(item => !item.isTrack)));
   songs$ = this.playlistService.all$.pipe(map(items => items.filter(item => item.isTrack)));

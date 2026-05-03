@@ -13,15 +13,22 @@
   <div class="hero-body">
     <div class="box">
       <p class="subtitle">Download</p>
-      <div class="is-flex">
-        <input class="input" type="text" [(ngModel)]="url" placeholder="Paste playlist/song/artist url"/>
-        <button class="button is-primary"
-                [class.is-loading]="(createLoading$ | async)?.isLoading"
-                (click)="download()"
-                [disabled]="!url"
-        >
-          <i class="fa-solid fa-download"></i> Download
-        </button>
+      <div>
+        <div class="is-flex">
+          <input class="input"
+                 [class.is-danger]="url && !isValidSpotifyUrl"
+                 type="text"
+                 [(ngModel)]="url"
+                 placeholder="Paste playlist/song/artist url"/>
+          <button class="button is-primary"
+                  [class.is-loading]="(createLoading$ | async)?.isLoading"
+                  (click)="download()"
+                  [disabled]="!url || !isValidSpotifyUrl"
+          >
+            <i class="fa-solid fa-download"></i> Download
+          </button>
+        </div>
+        <p *ngIf="url && !isValidSpotifyUrl" class="help is-danger">Please enter a valid Spotify URL (e.g. https://open.spotify.com/...)</p>
       </div>
     </div>
     <hr>
