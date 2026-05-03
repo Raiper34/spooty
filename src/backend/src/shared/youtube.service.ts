@@ -5,6 +5,7 @@ import { TrackService } from '../track/track.service';
 import { ConfigService } from '@nestjs/config';
 import { YtDlp } from 'ytdlp-nodejs';
 import * as yts from 'yt-search';
+import * as fs from 'fs';
 const NodeID3 = require('node-id3');
 
 const HEADERS = {
@@ -25,6 +26,27 @@ export class YoutubeService {
     return url;
   }
 
+  private getCookiesOptions(): {
+    cookiesFromBrowser?: string;
+    cookies?: string;
+  } {
+    const cookiesBrowser = this.configService.get<string>(
+      EnvironmentEnum.YT_COOKIES,
+    );
+    if (cookiesBrowser) {
+      this.logger.debug(`Using cookies from browser: ${cookiesBrowser}`);
+      return { cookiesFromBrowser: cookiesBrowser };
+    }
+    const cookiesFile = this.configService.get<string>(
+      EnvironmentEnum.YT_COOKIES_FILE,
+    );
+    if (cookiesFile && fs.existsSync(cookiesFile)) {
+      this.logger.debug(`Using cookies file: ${cookiesFile}`);
+      return { cookies: cookiesFile };
+    }
+    return {};
+  }
+
   async downloadAndFormat(track: TrackEntity, output: string): Promise<void> {
     this.logger.debug(
       `Downloading ${track.artist} - ${track.name} (${track.youtubeUrl}) from YT`,
@@ -39,7 +61,7 @@ export class YoutubeService {
       this.configService.get<'m4a'>(EnvironmentEnum.FORMAT),
       {
         output,
-        cookiesFromBrowser: this.configService.get<string>('YT_COOKIES'),
+        ...this.getCookiesOptions(),
         headers: HEADERS,
         jsRuntime: 'node',
         audioQuality: this.configService.get<string>('QUALITY'),

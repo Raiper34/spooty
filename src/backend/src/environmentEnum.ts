@@ -6,4 +6,6 @@ export enum EnvironmentEnum {
   REDIS_PORT = 'REDIS_PORT',
   REDIS_HOST = 'REDIS_HOST',
   REDIS_RUN = 'REDIS_RUN',
+  YT_COOKIES = 'YT_COOKIES',
+  YT_COOKIES_FILE = 'YT_COOKIES_FILE',
 }
