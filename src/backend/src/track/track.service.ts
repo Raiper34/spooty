@@ -99,6 +99,8 @@ export class TrackService {
         error: String(err),
         status: TrackStatusEnum.Error,
       };
+      await this.update(track.id, updatedTrack);
+      return;
     }
     await this.trackDownloadQueue.add('', updatedTrack, {
       jobId: `id-${updatedTrack.id}`,
