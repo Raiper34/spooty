@@ -19,11 +19,34 @@ export class YoutubeService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async findOnYoutubeOne(artist: string, name: string): Promise<string> {
+  async findOnYoutubeOne(
+    artist: string,
+    name: string,
+    retries = 3,
+  ): Promise<string> {
     this.logger.debug(`Searching ${artist} - ${name} on YT`);
-    const url = (await yts(`${artist} - ${name}`)).videos[0].url;
-    this.logger.debug(`Found ${artist} - ${name} on ${url}`);
-    return url;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const result = await yts(`${artist} - ${name}`);
+        if (!result.videos?.length) {
+          throw new Error('No videos found');
+        }
+        const url = result.videos[0].url;
+        this.logger.debug(`Found ${artist} - ${name} on ${url}`);
+        return url;
+      } catch (err) {
+        if (attempt < retries) {
+          const delay = attempt * 2000;
+          this.logger.warn(
+            `YT search attempt ${attempt}/${retries} failed for ${artist} - ${name}: ${err}. Retrying in ${delay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          throw err;
+        }
+      }
+    }
+    throw new Error('Unreachable');
   }
 
   private getCookiesOptions(): {
