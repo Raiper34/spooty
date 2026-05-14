@@ -8,6 +8,7 @@ import { SharedModule } from '../shared/shared.module';
 import { BullModule } from '@nestjs/bullmq';
 import { TrackDownloadProcessor } from './track-download.processor';
 import { TrackSearchProcessor } from './track-search.processor';
+import { SkipDownloadBurstService } from './skip-download-burst.service';
 
 @Module({
   imports: [
@@ -19,7 +20,12 @@ import { TrackSearchProcessor } from './track-search.processor';
     ConfigModule,
     SharedModule,
   ],
-  providers: [TrackService, TrackDownloadProcessor, TrackSearchProcessor],
+  providers: [
+    TrackService,
+    TrackDownloadProcessor,
+    TrackSearchProcessor,
+    SkipDownloadBurstService,
+  ],
   controllers: [TrackController],
   exports: [TrackService],
 })
