@@ -12,6 +12,7 @@ import { UtilsService } from '../shared/utils.service';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { YoutubeService } from '../shared/youtube.service';
+import * as fs from 'fs';
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -134,14 +135,20 @@ export class TrackService {
     let error: string;
     try {
       const folderName = this.getFolderName(track, track.playlist);
-      await this.youtubeService.downloadAndFormat(track, folderName);
-      if (coverUrl) {
-        await this.youtubeService.addImage(
-          folderName,
-          coverUrl,
-          track.name,
-          track.artist,
+      if (fs.existsSync(folderName)) {
+        this.logger.debug(
+          `File already exists, skipping download: ${folderName}`,
         );
+      } else {
+        await this.youtubeService.downloadAndFormat(track, folderName);
+        if (coverUrl) {
+          await this.youtubeService.addImage(
+            folderName,
+            coverUrl,
+            track.name,
+            track.artist,
+          );
+        }
       }
     } catch (err) {
       this.logger.error(err);
