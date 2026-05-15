@@ -117,11 +117,17 @@ Some behaviour and settings of Spooty can be configured using environment variab
  RUN_REDIS               | false                                       | Whenever Redis server should be started from backend (recommended for Docker environment)                                                                                 |
  SPOTIFY_CLIENT_ID       | your_client_id                              | Client ID of your Spotify application (required)                                                                                                                          |
  SPOTIFY_CLIENT_SECRET   | your_client_secret                          | Client Secret of your Spotify application (required)                                                                                                                      |
+ SPOTIFY_REDIRECT_URI    |                                             | Exact OAuth redirect URL (e.g. `http://127.0.0.1:3000/api/auth/spotify/callback`). Must match Spotify app settings. Enables user login for full playlist Web API access. |
+ SPOTIFY_AUTH_SCOPES     | playlist-read-private playlist-read-collaborative | Space-separated OAuth scopes (optional).                                                                                                                          |
  YT_DOWNLOADS_PER_MINUTE | 3                                           | Set the maximum number of YouTube downloads started per minute                                                                                                            |
  YT_SKIP_BURST_LIMIT     | 5                                           | After this many consecutive skips (output file already on disk), pause before the next download job (see `YT_SKIP_BURST_COOLDOWN_MS`)                                     |
  YT_SKIP_BURST_COOLDOWN_MS | 60000                                     | Extra milliseconds to wait when the skip burst limit is reached                                                                                                         |
  YT_COOKIES              |                                             | Browser name to automatically extract YouTube cookies from (e.g. `chrome`, `firefox`). Only works when running Spooty natively (not in Docker). See [below](#yt_cookies---browser-based-cookies-non-docker). |
  YT_COOKIES_FILE         | `./config/cookies.txt`                      | Path to a Netscape-format `cookies.txt` file. Recommended for Docker deployments. See [below](#yt_cookies_file---cookies-file-recommended-for-docker).                    |
+
+### Spotify user login (Web API)
+
+Spotify **client credentials** cannot read many user playlists (403). Set `SPOTIFY_REDIRECT_URI` and add the same URI in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), then open **`/api/auth/spotify/login`** on the same host as Spooty and sign in once. A **refresh token** is stored in your SQLite database (`DB_PATH`); keep that file private. Playlist and track Web API calls use your user token when linked. `GET /api/auth/spotify/status` returns `{ "linked": boolean }`.
 
 ### YouTube cookies
 

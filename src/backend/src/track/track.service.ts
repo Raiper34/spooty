@@ -112,11 +112,7 @@ export class TrackService {
     if (!(await this.get(track.id))) {
       return false;
     }
-    if (
-      !track.name ||
-      !track.artist ||
-      !track.playlist
-    ) {
+    if (!track.name || !track.artist || !track.playlist) {
       this.logger.error(
         `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}`,
       );
@@ -181,7 +177,7 @@ export class TrackService {
         this.getTrackFileName(track),
       );
     }
-    
+
     const safePlaylistName = playlist?.name || 'unknown_playlist';
     return resolve(
       this.utilsService.getPlaylistFolderPath(safePlaylistName),

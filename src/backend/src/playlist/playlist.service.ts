@@ -207,13 +207,16 @@ export class PlaylistService {
 
   private createPlaylistFolderStructure(playlistName: string): void {
     const playlistPath = this.utilsService.getPlaylistFolderPath(playlistName);
-    !fs.existsSync(playlistPath) && fs.mkdirSync(playlistPath);
+    if (!fs.existsSync(playlistPath)) {
+      fs.mkdirSync(playlistPath);
+    }
   }
 
   @Interval(3_600_000)
   async checkActivePlaylists(): Promise<void> {
     // Only check actual playlists (not individual tracks) that are subscribed
     const activePlaylists = await this.findAll(
+      { tracks: true },
       { active: true, isTrack: false },
     );
     for (const playlist of activePlaylists) {

@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TrackService } from '../track/track.service';
 import { SpotifyApiService } from './spotify-api.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('isomorphic-unfetch');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { getDetails } = require('spotify-url-info')(fetch);
+
+const { getDetails } = require('spotify-url-info')(
+  globalThis.fetch.bind(globalThis),
+);
 
 @Injectable()
 export class SpotifyService {
@@ -52,6 +52,9 @@ export class SpotifyService {
       };
     } catch (error) {
       this.logger.error(`Error getting playlist details: ${error.message}`);
+      this.logger.warn(
+        'Using embed fallback for playlist tracks (often capped at ~100). Open /api/auth/spotify/login in your browser to link your Spotify account for full Web API access.',
+      );
       const detail = await getDetails(spotifyUrl);
       return {
         name: detail.preview.title,
@@ -67,6 +70,9 @@ export class SpotifyService {
       return await this.spotifyApiService.getAllPlaylistTracks(spotifyUrl);
     } catch (error) {
       this.logger.error(`Error getting playlist tracks: ${error.message}`);
+      this.logger.warn(
+        'Using embed fallback for playlist tracks (often capped at ~100). Link Spotify at /api/auth/spotify/login for full access.',
+      );
       return (await getDetails(spotifyUrl)?.tracks) ?? [];
     }
   }
