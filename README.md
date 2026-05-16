@@ -40,7 +40,7 @@ To fully use Spooty, you need to create an application in the Spotify Developer 
 2. Sign in with your Spotify account
 3. Create a new application
 4. Note your `Client ID` and `Client Secret`
-5. Configure the redirect URI to `http://127.0.0.1:3000/api/callback` (or the corresponding URL of your instance)
+5. Configure the redirect URI to `http://127.0.0.1:3000/api/auth/spotify/callback` (loopback IP required; `localhost` is not allowed — see [Spotify redirect URI rules](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri))
 
 These credentials will be used by Spooty to access the Spotify API.
 
@@ -127,7 +127,7 @@ Some behaviour and settings of Spooty can be configured using environment variab
 
 ### Spotify user login (Web API)
 
-Spotify **client credentials** cannot read many user playlists (403). Set `SPOTIFY_REDIRECT_URI` and add the same URI in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), then open **`/api/auth/spotify/login`** on the same host as Spooty and sign in once. A **refresh token** is stored in your SQLite database (`DB_PATH`); keep that file private. Playlist and track Web API calls use your user token when linked. `GET /api/auth/spotify/status` returns `{ "linked": boolean }`.
+Spotify **client credentials** cannot read many user playlists (403). Set `SPOTIFY_REDIRECT_URI` to a loopback URL (e.g. `http://127.0.0.1:3000/api/auth/spotify/callback`) and add the same URI in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), then open Spooty at **`http://127.0.0.1:3000`** and use **Connect Spotify** (or `/api/auth/spotify/login`). A **refresh token** is stored in your SQLite database (`DB_PATH`); keep that file private. Playlist and track Web API calls use your user token when linked. `GET /api/auth/spotify/status` returns `{ "linked": boolean }`.
 
 ### YouTube cookies
 

@@ -19,6 +19,6 @@ COPY src/frontend/package.json src/frontend/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev -w backend
 COPY --from=builder /spooty/dist .
-COPY --from=builder /spooty/src/backend/.env.docker ./.env
+# Env comes from docker-compose env_file / -e (do not bake .env.docker; it overrides compose vars).
 EXPOSE 3000
 CMD ["node", "backend/main.js"]

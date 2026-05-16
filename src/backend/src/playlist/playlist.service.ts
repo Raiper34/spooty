@@ -31,11 +31,14 @@ export class PlaylistService {
     private readonly spotifyService: SpotifyService,
   ) {}
 
-  findAll(
-    relations: Record<string, boolean> = { tracks: true },
-    where?: Partial<PlaylistEntity>,
-  ): Promise<PlaylistEntity[]> {
-    return this.repository.find({ where, relations });
+  findAll(options?: {
+    where?: Partial<PlaylistEntity>;
+    relations?: Record<string, boolean>;
+  }): Promise<PlaylistEntity[]> {
+    return this.repository.find({
+      where: options?.where,
+      relations: options?.relations ?? { tracks: true },
+    });
   }
 
   findOne(id: number): Promise<PlaylistEntity | null> {
@@ -215,10 +218,10 @@ export class PlaylistService {
   @Interval(3_600_000)
   async checkActivePlaylists(): Promise<void> {
     // Only check actual playlists (not individual tracks) that are subscribed
-    const activePlaylists = await this.findAll(
-      { tracks: true },
-      { active: true, isTrack: false },
-    );
+    const activePlaylists = await this.findAll({
+      where: { active: true, isTrack: false },
+      relations: { tracks: true },
+    });
     for (const playlist of activePlaylists) {
       let tracks = [];
       try {
@@ -227,7 +230,7 @@ export class PlaylistService {
         );
         this.createPlaylistFolderStructure(playlist.name);
       } catch (err) {
-        await this.update(playlist.id, { ...playlist, error: String(err) });
+        await this.update(playlist.id, { error: String(err) });
       }
       for (const track of tracks ?? []) {
         const track2Save = {

@@ -12,6 +12,13 @@ export class SpotifyService {
 
   constructor(private readonly spotifyApiService: SpotifyApiService) {}
 
+  private shouldRethrowPlaylistError(error: unknown): boolean {
+    return (
+      error instanceof Error &&
+      error.message.includes('Spotify account not linked')
+    );
+  }
+
   isTrackUrl(url: string): boolean {
     return this.spotifyApiService.isTrackUrl(url);
   }
@@ -51,6 +58,9 @@ export class SpotifyService {
         image: metadata.image,
       };
     } catch (error) {
+      if (this.shouldRethrowPlaylistError(error)) {
+        throw error;
+      }
       this.logger.error(`Error getting playlist details: ${error.message}`);
       this.logger.warn(
         'Using embed fallback for playlist tracks (often capped at ~100). Open /api/auth/spotify/login in your browser to link your Spotify account for full Web API access.',
@@ -69,6 +79,9 @@ export class SpotifyService {
     try {
       return await this.spotifyApiService.getAllPlaylistTracks(spotifyUrl);
     } catch (error) {
+      if (this.shouldRethrowPlaylistError(error)) {
+        throw error;
+      }
       this.logger.error(`Error getting playlist tracks: ${error.message}`);
       this.logger.warn(
         'Using embed fallback for playlist tracks (often capped at ~100). Link Spotify at /api/auth/spotify/login for full access.',

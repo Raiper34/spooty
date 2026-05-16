@@ -4,8 +4,6 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 const fetch = globalThis.fetch.bind(globalThis);
 import { SpotifyUserAuthEntity } from './spotify-user-auth.entity';
-import { EnvironmentEnum } from '../environmentEnum';
-
 const SINGLETON_ID = 1;
 
 @Injectable()
@@ -50,17 +48,19 @@ export class SpotifyTokenService {
     return this.refreshAccessToken(row);
   }
 
-  async exchangeAuthorizationCode(code: string): Promise<void> {
-    const clientId = this.configService.get<string>('SPOTIFY_CLIENT_ID');
-    const clientSecret = this.configService.get<string>(
-      'SPOTIFY_CLIENT_SECRET',
-    );
-    const redirectUri = this.configService.get<string>(
-      EnvironmentEnum.SPOTIFY_REDIRECT_URI,
-    );
+  async exchangeAuthorizationCode(
+    code: string,
+    redirectUri: string,
+  ): Promise<void> {
+    const clientId =
+      this.configService.get<string>('SPOTIFY_CLIENT_ID') ??
+      process.env.SPOTIFY_CLIENT_ID;
+    const clientSecret =
+      this.configService.get<string>('SPOTIFY_CLIENT_SECRET') ??
+      process.env.SPOTIFY_CLIENT_SECRET;
     if (!clientId || !clientSecret || !redirectUri) {
       throw new Error(
-        'SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, and SPOTIFY_REDIRECT_URI must be set',
+        'SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, and redirect_uri must be set',
       );
     }
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(

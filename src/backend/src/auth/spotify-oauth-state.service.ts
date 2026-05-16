@@ -3,23 +3,33 @@ import { randomBytes } from 'crypto';
 
 const STATE_TTL_MS = 10 * 60 * 1000;
 
+type PendingOAuth = { expiresAt: number; redirectUri: string };
+
 @Injectable()
 export class SpotifyOAuthStateService {
-  private readonly pending = new Map<string, number>();
+  private readonly pending = new Map<string, PendingOAuth>();
 
-  createState(): string {
+  createState(redirectUri: string): string {
     const state = randomBytes(16).toString('hex');
-    this.pending.set(state, Date.now() + STATE_TTL_MS);
+    this.pending.set(state, {
+      expiresAt: Date.now() + STATE_TTL_MS,
+      redirectUri,
+    });
     return state;
   }
 
-  /** Returns true if state was valid and consumed (single use). */
-  consumeState(state: string | undefined): boolean {
+  /**
+   * Returns redirect URI if state was valid and consumed (single use).
+   */
+  consumeState(state: string | undefined): string | null {
     if (!state) {
-      return false;
+      return null;
     }
-    const expiresAt = this.pending.get(state);
+    const pending = this.pending.get(state);
     this.pending.delete(state);
-    return expiresAt != null && Date.now() < expiresAt;
+    if (pending == null || Date.now() >= pending.expiresAt) {
+      return null;
+    }
+    return pending.redirectUri;
   }
 }

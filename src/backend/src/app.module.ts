@@ -16,7 +16,12 @@ import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // Prefer process.env (e.g. Docker Compose env_file); optional file is fallback only.
+      envFilePath: '.env',
+      ignoreEnvFile: false,
+    }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

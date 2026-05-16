@@ -1,9 +1,10 @@
-import { Controller, Get, Query, Res, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { SpotifyOAuthStateService } from './spotify-oauth-state.service';
 import { SpotifyTokenService } from './spotify-token.service';
 import { EnvironmentEnum } from '../environmentEnum';
+import { resolveSpotifyRedirectUri } from './spotify-redirect-uri';
 
 @Controller('auth/spotify')
 export class SpotifyAuthController {
@@ -21,23 +22,35 @@ export class SpotifyAuthController {
   }
 
   @Get('login')
-  login(@Res() res: Response): void {
-    const clientId = this.configService.get<string>('SPOTIFY_CLIENT_ID');
-    const redirectUri = this.configService.get<string>(
-      EnvironmentEnum.SPOTIFY_REDIRECT_URI,
-    );
+  login(@Req() req: Request, @Res() res: Response): void {
+    const clientId =
+      this.configService.get<string>('SPOTIFY_CLIENT_ID') ??
+      process.env.SPOTIFY_CLIENT_ID;
+    const configuredRedirect =
+      this.configService.get<string>(EnvironmentEnum.SPOTIFY_REDIRECT_URI) ??
+      process.env.SPOTIFY_REDIRECT_URI;
+    const redirectUri = resolveSpotifyRedirectUri(req, configuredRedirect);
     const scopes =
       this.configService.get<string>(EnvironmentEnum.SPOTIFY_AUTH_SCOPES) ??
+      process.env.SPOTIFY_AUTH_SCOPES ??
       'playlist-read-private playlist-read-collaborative';
-    if (!clientId || !redirectUri) {
+    const missing: string[] = [];
+    if (!clientId) {
+      missing.push('SPOTIFY_CLIENT_ID');
+    }
+    if (!redirectUri) {
+      missing.push('SPOTIFY_REDIRECT_URI');
+    }
+    if (missing.length) {
       res
         .status(500)
         .send(
-          'Missing SPOTIFY_CLIENT_ID or SPOTIFY_REDIRECT_URI; configure .env and Spotify app redirect URI.',
+          `Missing ${missing.join(' and ')}. Set them in the repo-root .env (Docker Compose env_file) and restart the container. SPOTIFY_REDIRECT_URI must use a loopback IP (e.g. http://127.0.0.1:3000/api/auth/spotify/callback); localhost is not allowed by Spotify.`,
         );
       return;
     }
-    const state = this.oauthState.createState();
+    this.logger.debug(`Spotify OAuth redirect_uri=${redirectUri}`);
+    const state = this.oauthState.createState(redirectUri);
     const url = new URL('https://accounts.spotify.com/authorize');
     url.searchParams.set('client_id', clientId);
     url.searchParams.set('response_type', 'code');
@@ -66,7 +79,8 @@ export class SpotifyAuthController {
       );
       return;
     }
-    if (!code || !this.oauthState.consumeState(state)) {
+    const redirectUri = this.oauthState.consumeState(state);
+    if (!code || !redirectUri) {
       res
         .status(400)
         .send(
@@ -75,7 +89,7 @@ export class SpotifyAuthController {
       return;
     }
     try {
-      await this.tokenService.exchangeAuthorizationCode(code);
+      await this.tokenService.exchangeAuthorizationCode(code, redirectUri);
       res.redirect(302, '/?spotify_connected=1');
     } catch (e) {
       this.logger.error(e);
