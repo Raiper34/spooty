@@ -12,6 +12,7 @@ import { UtilsService } from '../shared/utils.service';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { YoutubeService } from '../shared/youtube.service';
+import * as fs from 'fs';
 
 enum WsTrackOperation {
   New = 'trackNew',
@@ -106,19 +107,16 @@ export class TrackService {
     await this.update(track.id, updatedTrack);
   }
 
-  async downloadFromYoutube(track: TrackEntity): Promise<void> {
+  /** @returns true when the output file already existed and yt-dlp was skipped */
+  async downloadFromYoutube(track: TrackEntity): Promise<boolean> {
     if (!(await this.get(track.id))) {
-      return;
+      return false;
     }
-    if (
-      !track.name ||
-      !track.artist ||
-      !track.playlist
-    ) {
+    if (!track.name || !track.artist || !track.playlist) {
       this.logger.error(
         `Track or playlist field is null or undefined: name=${track.name}, artist=${track.artist}, playlist=${track.playlist ? 'ok' : 'null'}`,
       );
-      return;
+      return false;
     }
     // Use track's own coverUrl if available, otherwise fall back to playlist coverUrl
     const coverUrl = track.coverUrl || track.playlist.coverUrl;
@@ -132,16 +130,24 @@ export class TrackService {
       status: TrackStatusEnum.Downloading,
     });
     let error: string;
+    let skippedExistingFile = false;
     try {
       const folderName = this.getFolderName(track, track.playlist);
-      await this.youtubeService.downloadAndFormat(track, folderName);
-      if (coverUrl) {
-        await this.youtubeService.addImage(
-          folderName,
-          coverUrl,
-          track.name,
-          track.artist,
+      if (fs.existsSync(folderName)) {
+        this.logger.debug(
+          `File already exists, skipping download: ${folderName}`,
         );
+        skippedExistingFile = true;
+      } else {
+        await this.youtubeService.downloadAndFormat(track, folderName);
+        if (coverUrl) {
+          await this.youtubeService.addImage(
+            folderName,
+            coverUrl,
+            track.name,
+            track.artist,
+          );
+        }
       }
     } catch (err) {
       this.logger.error(err);
@@ -153,6 +159,7 @@ export class TrackService {
       ...(error ? { error } : {}),
     };
     await this.update(track.id, updatedTrack);
+    return Boolean(skippedExistingFile && !error);
   }
 
   getTrackFileName(track: TrackEntity): string {
@@ -170,7 +177,7 @@ export class TrackService {
         this.getTrackFileName(track),
       );
     }
-    
+
     const safePlaylistName = playlist?.name || 'unknown_playlist';
     return resolve(
       this.utilsService.getPlaylistFolderPath(safePlaylistName),

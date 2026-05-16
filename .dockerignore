@@ -1,0 +1,28 @@
+# Reinstalled and rebuilt inside the image (npm ci / npm run build)
+node_modules
+**/node_modules
+dist
+
+# Git — not needed in build context
+.git
+
+# Local secrets at repo root (image uses src/backend/.env.docker via Dockerfile)
+/.env
+
+# Editors, caches, test output
+.idea
+.vscode
+.cursor
+**/.angular
+coverage
+**/*.sqlite
+*.log
+npm-debug.log*
+
+# CI / hosting metadata unused by the Docker build
+.github
+.netlify
+
+# Local-only compose overrides (not COPY'd into the image)
+docker-compose.yml
+docker-compose.*.yml

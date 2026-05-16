@@ -8,23 +8,30 @@ import { TrackEntity } from './track/track.entity';
 import { TrackModule } from './track/track.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { PlaylistEntity } from './playlist/playlist.entity';
+import { SpotifyUserAuthEntity } from './auth/spotify-user-auth.entity';
+import { AuthModule } from './auth/auth.module';
 import { resolve } from 'path';
 import { EnvironmentEnum } from './environmentEnum';
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // Prefer process.env (e.g. Docker Compose env_file); optional file is fallback only.
+      envFilePath: '.env',
+      ignoreEnvFile: false,
+    }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        type: 'sqlite',
+        type: 'better-sqlite3',
         database: resolve(
           __dirname,
           configService.get<string>(EnvironmentEnum.DB_PATH),
         ),
-        entities: [TrackEntity, PlaylistEntity],
+        entities: [TrackEntity, PlaylistEntity, SpotifyUserAuthEntity],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -57,6 +64,7 @@ import { BullModule } from '@nestjs/bullmq';
     }),
     TrackModule,
     PlaylistModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [],

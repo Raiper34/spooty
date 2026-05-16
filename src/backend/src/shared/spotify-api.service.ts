@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('isomorphic-unfetch');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetch = globalThis.fetch.bind(globalThis);
+
 const { getDetails } = require('spotify-url-info')(fetch);
+import { SpotifyTokenService } from '../auth/spotify-token.service';
 
 @Injectable()
 export class SpotifyApiService {
   private readonly logger = new Logger(SpotifyApiService.name);
-  private accessToken: string | null = null;
-  private tokenExpiry: number = 0;
+  private clientCredentialsToken: string | null = null;
+  private clientCredentialsExpiry = 0;
 
-  constructor() {}
+  constructor(private readonly spotifyTokenService: SpotifyTokenService) {}
 
   private getPlaylistId(url: string): string {
     try {
@@ -57,7 +57,7 @@ export class SpotifyApiService {
     try {
       this.logger.debug(`Getting track metadata for ${spotifyUrl}`);
       const trackId = this.getTrackId(spotifyUrl);
-      const accessToken = await this.getAccessToken();
+      const accessToken = await this.getWebApiAccessToken();
 
       const response = await fetch(
         `https://api.spotify.com/v1/tracks/${trackId}`,
@@ -102,13 +102,24 @@ export class SpotifyApiService {
     }
   }
 
-  private async getAccessToken(): Promise<string> {
-    if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return this.accessToken;
+  private async getWebApiAccessToken(): Promise<string> {
+    const userToken = await this.spotifyTokenService.getUserAccessToken();
+    if (userToken) {
+      return userToken;
+    }
+    return this.getClientCredentialsToken();
+  }
+
+  private async getClientCredentialsToken(): Promise<string> {
+    if (
+      this.clientCredentialsToken &&
+      Date.now() < this.clientCredentialsExpiry
+    ) {
+      return this.clientCredentialsToken;
     }
 
     try {
-      this.logger.debug('Getting new Spotify access token');
+      this.logger.debug('Getting new Spotify client-credentials access token');
 
       const clientId = process.env.SPOTIFY_CLIENT_ID;
       const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -138,15 +149,58 @@ export class SpotifyApiService {
       }
 
       const data = await response.json();
-      this.accessToken = data.access_token;
-      this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
+      this.clientCredentialsToken = data.access_token;
+      this.clientCredentialsExpiry =
+        Date.now() + data.expires_in * 1000 - 60000;
 
-      this.logger.debug('Successfully obtained Spotify access token');
-      return this.accessToken;
+      this.logger.debug(
+        'Successfully obtained Spotify client-credentials token',
+      );
+      return this.clientCredentialsToken;
     } catch (error) {
       this.logger.error(`Error getting Spotify access token: ${error.message}`);
       throw error;
     }
+  }
+
+  /**
+   * Development Mode requires a user token to read playlist items for owned/collaborated playlists.
+   */
+  async requireUserAccessToken(): Promise<string> {
+    const userToken = await this.spotifyTokenService.getUserAccessToken();
+    if (!userToken) {
+      throw new Error(
+        'Spotify account not linked. Visit /api/auth/spotify/login to import full playlists (required for private or large playlists in Development Mode).',
+      );
+    }
+    return userToken;
+  }
+
+  async isUserLinked(): Promise<boolean> {
+    return this.spotifyTokenService.isLinked();
+  }
+
+  private mapPlaylistRowToTrack(entry: {
+    track?: SpotifyTrackPayload | null;
+    item?: SpotifyTrackPayload | null;
+  }): {
+    id: string;
+    name: string;
+    artist: string;
+    previewUrl: string | null;
+    coverUrl: string | null;
+  } | null {
+    const media = entry.track ?? entry.item;
+    if (!media?.id || !media.name || !media.artists?.length) {
+      return null;
+    }
+    return {
+      id: media.id,
+      name: media.name,
+      artist: media.artists.map((a) => a.name).join(', '),
+      previewUrl: media.preview_url ?? null,
+      coverUrl: media.album?.images?.[0]?.url ?? null,
+    };
   }
 
   async getAllPlaylistTracks(spotifyUrl: string): Promise<any[]> {
@@ -155,89 +209,97 @@ export class SpotifyApiService {
 
       const playlistId = this.getPlaylistId(spotifyUrl);
       this.logger.debug(`Extracted playlist ID: ${playlistId}`);
-      
-      const accessToken = await this.getAccessToken();
 
-      const allTracks = [];
-      let offset = 0;
-      let hasMoreTracks = true;
+      const accessToken = await this.requireUserAccessToken();
 
-      while (hasMoreTracks) {
-          this.logger.debug(
-            `Fetching tracks from Spotify API with offset ${offset}`,
+      const allTracks: Array<{
+        id: string;
+        name: string;
+        artist: string;
+        previewUrl: string | null;
+        coverUrl: string | null;
+      }> = [];
+
+      const fields =
+        'items(track(id,name,artists,preview_url,album(images)),item(id,name,artists,preview_url,album(images))),next';
+      let pageUrl: string | null =
+        `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=100&fields=${encodeURIComponent(fields)}`;
+
+      let pageIndex = 0;
+      while (pageUrl) {
+        this.logger.debug(
+          `Fetching playlist items from Spotify API (page ${pageIndex})`,
+        );
+
+        const response = await fetch(pageUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          this.logger.error(
+            `Spotify API error: ${response.status} ${errorText}`,
           );
-
-          const response = await fetch(
-            `https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${offset}&limit=100&fields=items(track(id,name,artists,preview_url,album(images))),next`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            },
-          );
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            this.logger.error(
-              `Spotify API error: ${response.status} ${errorText}`,
-            );
-            throw new Error(`Failed to fetch tracks: ${response.status}`);
-          }
-
-          const data = await response.json();
-
-          if (!data.items || data.items.length === 0) {
-            this.logger.debug('No more tracks to fetch from Spotify API');
-            hasMoreTracks = false;
-            continue;
-          }
-
-          const pageTracks = data.items
-            .map(
-              (item: {
-                track: {
-                  id: string;
-                  name: any;
-                  artists: any[];
-                  preview_url: any;
-                  album: { images: any[] };
-                };
-              }) => {
-                if (!item.track) return null;
-
-                return {
-                  id: item.track.id,
-                  name: item.track.name,
-                  artist: item.track.artists.map((a) => a.name).join(', '),
-                  previewUrl: item.track.preview_url,
-                  coverUrl: item.track.album?.images?.[0]?.url || null,
-                };
-              },
-            )
-            .filter((track) => track !== null);
-
-          this.logger.debug(
-            `Retrieved ${pageTracks.length} tracks from Spotify API at offset ${offset}`,
-          );
-
-          if (pageTracks.length > 0) {
-            allTracks.push(...pageTracks);
-          }
-
-          if (!data.next) {
-            hasMoreTracks = false;
-          } else {
-            offset += 100;
-          }
+          throw new Error(`Failed to fetch playlist items: ${response.status}`);
         }
 
+        const data = (await response.json()) as {
+          items?: Array<{
+            track?: SpotifyTrackPayload | null;
+            item?: SpotifyTrackPayload | null;
+          }>;
+          next?: string | null;
+        };
+
+        if (pageIndex === 0 && data.items?.[0]) {
+          this.logger.debug(
+            `Playlist item keys (sample): ${Object.keys(data.items[0]).join(', ')}`,
+          );
+        }
+
+        const pageTracks =
+          data.items
+            ?.map((entry) => this.mapPlaylistRowToTrack(entry))
+            .filter(
+              (track): track is NonNullable<typeof track> => track !== null,
+            ) ?? [];
+
         this.logger.debug(
-          `Total tracks retrieved from Spotify API: ${allTracks.length}`,
+          `Retrieved ${pageTracks.length} tracks from Spotify API (page ${pageIndex})`,
         );
-        return allTracks;
+
+        allTracks.push(...pageTracks);
+
+        if (!data.next) {
+          pageUrl = null;
+        } else {
+          if (!data.items?.length) {
+            this.logger.debug(
+              'Empty playlist items page with next cursor; continuing',
+            );
+          }
+          pageUrl = data.next;
+        }
+        pageIndex++;
+      }
+
+      this.logger.debug(
+        `Total tracks retrieved from Spotify API: ${allTracks.length}`,
+      );
+      return allTracks;
     } catch (error) {
       this.logger.error(`Failed to get all playlist tracks: ${error.message}`);
       throw error;
     }
   }
 }
+
+type SpotifyTrackPayload = {
+  id: string;
+  name: string;
+  artists: Array<{ name: string }>;
+  preview_url?: string | null;
+  album?: { images?: Array<{ url: string }> };
+};
