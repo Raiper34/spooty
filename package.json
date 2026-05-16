@@ -5,6 +5,9 @@
     "src/backend",
     "src/frontend"
   ],
+  "overrides": {
+    "eslint": "^9.39.1"
+  },
   "scripts": {
     "start:be": "npm run start:dev -w backend",
     "start:fe": "npm run start -w frontend",

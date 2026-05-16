@@ -6,6 +6,15 @@
       <span class="tag is-dark is-size-7">v{{version}}</span>
     </p>
     <p class="subtitle">Self-hosted spotify downloader</p>
+    <div class="buttons mt-2">
+      <a class="button is-light is-small" href="/api/auth/spotify/login">
+        <i class="fa-brands fa-spotify"></i>
+        <span>{{ spotifyLinked ? 'Reconnect Spotify' : 'Connect Spotify' }}</span>
+      </a>
+      <span class="tag is-info is-light" *ngIf="spotifyLinked === true">User linked</span>
+      <span class="tag is-warning is-light" *ngIf="spotifyLinked === false">App-only API</span>
+    </div>
+    <p *ngIf="spotifyBanner" class="notification is-light py-2 mt-2 mb-0">{{ spotifyBanner }}</p>
   </div>
 </section>
 
