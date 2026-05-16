@@ -19,12 +19,15 @@ const folderName = resolve(
   __dirname,
   process.env[EnvironmentEnum.DOWNLOADS_PATH],
 );
-!fs.existsSync(folderName) && fs.mkdirSync(folderName);
+if (!fs.existsSync(folderName)) {
+  fs.mkdirSync(folderName);
+}
 
 try {
   // not good idea, but I want to keep simple Dockerfile, I know ideally should be in another container and used docker compose
-  Boolean(process.env[EnvironmentEnum.REDIS_RUN]) &&
+  if (process.env[EnvironmentEnum.REDIS_RUN]) {
     exec(`redis-server --port ${process.env.REDIS_PORT}`);
+  }
 } catch (e) {
   console.log('Unable to run redis server form app');
   console.log(e);

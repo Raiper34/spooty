@@ -1,20 +1,24 @@
+# syntax=docker/dockerfile:1
+
 FROM node:20.20.0-alpine AS builder
 WORKDIR /spooty
+COPY package.json package-lock.json ./
+COPY src/backend/package.json src/backend/
+COPY src/frontend/package.json src/frontend/
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 COPY . .
-RUN npm ci
 RUN npm run build
 
 FROM node:20.20.0-alpine
 WORKDIR /spooty
+RUN apk add --no-cache ffmpeg python3 py3-pip
+COPY package.json package-lock.json ./
+COPY src/backend/package.json src/backend/
+COPY src/frontend/package.json src/frontend/
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev -w backend
 COPY --from=builder /spooty/dist .
-COPY --from=builder /spooty/src ./src
-COPY --from=builder /spooty/package.json ./package.json
-COPY --from=builder /spooty/package-lock.json ./package-lock.json
-COPY --from=builder /spooty/src/backend/.env.docker ./.env
-RUN npm prune --production
-RUN rm -rf src package.json package-lock.json
-RUN apk add --no-cache ffmpeg
-RUN apk add --no-cache redis
-RUN apk add --no-cache python3 py3-pip
+# Env comes from docker-compose env_file / -e (do not bake .env.docker; it overrides compose vars).
 EXPOSE 3000
 CMD ["node", "backend/main.js"]
